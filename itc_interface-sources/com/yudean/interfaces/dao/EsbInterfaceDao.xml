@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+    <!DOCTYPE mapper 
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yudean.interfaces.dao.EsbInterfaceDao">
+	<sql id="column">
+		SITE_ID AS SITEID,
+		ORG_CODE AS ORGCODE,
+		ROLE_ID AS ROLEID,
+		ROLE_NAME AS ROLENAME,
+		ACTIVE,
+		UPDATED_BY AS UPDATEDBY,
+		UPDATE_TIME AS UPDATETIME
+	</sql>
+	<!-- 如果要往表中插入空数据，则需要设置jdbcType -->
+	<sql id="property">
+		(#{UPDATEBY,jdbcType=VARCHAR},
+		 #{UPDATETIME,jdbcType=TIMESTAMP})
+	</sql>
+	<select id="getConf" resultType="SyncConfBean">
+		SELECT
+		<include refid="column" />
+		FROM SEC_SYNC_CONF S
+		<where>
+			<if test="siteid != null and siteid != ''">
+				AND S.SITE_ID = #{siteid}
+			</if>
+			<if test="orgcode != null and orgcode != ''">
+				AND S.ORG_CODE = #{orgcode}
+			</if>
+			<if test="roleid != null and roleid != ''">
+				AND S.ROLE_ID = #{roleid}
+			</if>
+			<if test="active != null and active != ''">
+				AND S.ACTIVE = #{active}
+			</if>
+		</where>
+	</select>
+</mapper> 

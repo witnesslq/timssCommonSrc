@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yudean.itc.dao.sec.PrivilegeMapper">
+	
+	<select id="selectUserPrivilege" parameterType="string" resultType="string">
+        SELECT DISTINCT SRF.FUNC_ID 
+          FROM SEC_USER SU 
+               INNER JOIN SEC_GROUP_USER SGU ON SU.USER_ID = SGU.USER_ID
+               INNER JOIN SEC_GROUP_ROLE SGR ON SGU.GROUP_ID = SGR.GROUP_ID
+               INNER JOIN SEC_ROLE SR ON SGR.ROLE_ID = SR.ROLE_ID
+               INNER JOIN SEC_ROLE_FUNCTION SRF ON SR.ROLE_ID = SRF.ROLE_ID
+         WHERE SU.USER_ID=#{userId} 
+            AND (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+            AND SR.SITE_ID=#{siteId}        
+        UNION
+        SELECT DISTINCT SRF.FUNC_ID 
+          FROM SEC_USER SU
+               INNER JOIN SEC_USER_ROLE SUR ON SU.USER_ID = SUR.USER_ID
+               INNER JOIN SEC_ROLE SR ON SUR.ROLE_ID = SR.ROLE_ID
+               INNER JOIN SEC_ROLE_FUNCTION SRF ON SR.ROLE_ID = SRF.ROLE_ID
+         WHERE SU.USER_ID=#{userId} 
+            AND (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+            AND SR.SITE_ID=#{siteId}
+     UNION
+SELECT DISTINCT SRF.MENU_ID 
+          FROM SEC_USER SU 
+               INNER JOIN SEC_GROUP_USER SGU ON SU.USER_ID = SGU.USER_ID
+               INNER JOIN SEC_GROUP_ROLE SGR ON SGU.GROUP_ID = SGR.GROUP_ID
+               INNER JOIN SEC_ROLE SR ON SGR.ROLE_ID = SR.ROLE_ID
+               INNER JOIN SEC_ROLE_MENU SRF ON SR.ROLE_ID = SRF.ROLE_ID
+         WHERE SU.USER_ID=#{userId} 
+            AND (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+            AND SR.SITE_ID=#{siteId}        
+             UNION
+        SELECT DISTINCT SRF.MENU_ID 
+          FROM SEC_USER SU
+               INNER JOIN SEC_USER_ROLE SUR ON SU.USER_ID = SUR.USER_ID
+               INNER JOIN SEC_ROLE SR ON SUR.ROLE_ID = SR.ROLE_ID
+               INNER JOIN SEC_ROLE_MENU SRF ON SR.ROLE_ID = SRF.ROLE_ID
+         WHERE SU.USER_ID=#{userId} 
+            AND (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+           AND SR.SITE_ID=#{siteId}            
+
+	</select>
+
+    <select id="selectUserPrivilegeByTree" parameterType="string" resultType="Map">
+       SELECT SRF.FUNC_ID AS PRIVID,SF.NAME AS PRIVNAME,SGU.GROUP_ID as SUBID,'group' as PRIVFROM,SG.NAME AS SUBNAME,'function' as PRIVCAT,SF.MENU_ID as PMENUID
+          FROM SEC_USER SU
+               INNER JOIN SEC_GROUP_USER SGU ON SU.USER_ID = SGU.USER_ID
+               INNER JOIN SEC_GROUP_ROLE SGR ON SGU.GROUP_ID = SGR.GROUP_ID
+               INNER JOIN SEC_ROLE SR ON SGR.ROLE_ID = SR.ROLE_ID
+               INNER JOIN SEC_ROLE_FUNCTION SRF ON SR.ROLE_ID = SRF.ROLE_ID
+               INNER JOIN SEC_GROUP SG ON SG.GROUP_ID = SGU.GROUP_ID
+               INNER JOIN SEC_FUNCTION SF ON SF.FUNC_ID = SRF.FUNC_ID
+         WHERE SU.USER_ID=#{userId}
+            AND (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+            AND SR.SITE_ID=#{siteId}
+        UNION
+        SELECT SRF.FUNC_ID AS PRIVID,SF.NAME AS PRIVNAME,SUR.ROLE_ID as SUBID,'role' as PRIVFROM,SR.Name as SUBNAME,'function' as PRIVCAT,SF.Menu_Id as PMENUID
+          FROM SEC_USER SU
+               INNER JOIN SEC_USER_ROLE SUR ON SU.USER_ID = SUR.USER_ID
+               INNER JOIN SEC_ROLE SR ON SUR.ROLE_ID = SR.ROLE_ID
+               INNER JOIN SEC_ROLE_FUNCTION SRF ON SR.ROLE_ID = SRF.ROLE_ID
+               INNER JOIN SEC_FUNCTION SF ON SF.FUNC_ID = SRF.FUNC_ID
+         WHERE SU.USER_ID=#{userId}
+            AND (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+            AND SR.SITE_ID=#{siteId}
+     UNION
+SELECT SRF.MENU_ID as PRIVID,SM.NAME as PRIVNAME,SG.GROUP_ID as SUBID,'group' as PRIVFROM,SG.NAME as SUBNAME,'menu' as PRIVCAT,SM.PARENT_MENU AS PMENUID
+          FROM SEC_USER SU
+               INNER JOIN SEC_GROUP_USER SGU ON SU.USER_ID = SGU.USER_ID
+               INNER JOIN SEC_GROUP_ROLE SGR ON SGU.GROUP_ID = SGR.GROUP_ID
+               INNER JOIN SEC_ROLE SR ON SGR.ROLE_ID = SR.ROLE_ID
+               INNER JOIN SEC_ROLE_MENU SRF ON SR.ROLE_ID = SRF.ROLE_ID
+               INNER JOIN SEC_GROUP SG ON SG.GROUP_ID = SGU.GROUP_ID
+               INNER JOIN SEC_MENU SM ON SM.MENU_ID = SRF.MENU_ID
+         WHERE SU.USER_ID=#{userId}
+            AND (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+            AND SR.SITE_ID=#{siteId}
+             UNION
+        SELECT SRF.MENU_ID as PRIVID,SM.NAME as PRIVNAME,SR.ROLE_ID as SUBID,'role' as PRIVFROM,SR.NAME as SUBNAME,'menu' as PRIVCAT,SM.PARENT_MENU AS PMENUID
+          FROM SEC_USER SU
+               INNER JOIN SEC_USER_ROLE SUR ON SU.USER_ID = SUR.USER_ID
+               INNER JOIN SEC_ROLE SR ON SUR.ROLE_ID = SR.ROLE_ID
+               INNER JOIN SEC_ROLE_MENU SRF ON SR.ROLE_ID = SRF.ROLE_ID
+               INNER JOIN SEC_MENU SM ON SM.MENU_ID = SRF.MENU_ID
+         WHERE SU.USER_ID=#{userId}
+            AND (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+           AND SR.SITE_ID=#{siteId}
+    </select>
+	
+	<select id="selectAllPrivilege" parameterType="string" resultType="string">
+		SELECT FUNC_ID FROM SEC_FUNCTION WHERE ACTIVE='Y'
+		UNION ALL
+		SELECT MENU_ID FROM SEC_MENU WHERE ACTIVE='Y'
+	</select>
+	
+	<select id="selectRolePrivileges" parameterType="string" resultType="Privilege">		
+		SELECT SRF.FUNC_ID as ID,SF.NAME as NAME, 'F' AS PrivilegeTypeCode FROM SEC_ROLE_FUNCTION SRF 
+	    LEFT JOIN SEC_FUNCTION SF ON SF.FUNC_ID=SRF.FUNC_ID 
+	    WHERE ROLE_ID=#{value} and SF.ACTIVE='Y'
+	    UNION ALL
+	    SELECT SRM.MENU_ID AS ID,SM.NAME as NAME, 'M' AS PrivilegeTypeCode FROM SEC_ROLE_MENU SRM 
+	    LEFT JOIN SEC_MENU SM ON SM.MENU_ID=SRM.MENU_ID
+	    WHERE ROLE_ID=#{value} and SM.ACTIVE='Y'
+	</select>
+	
+</mapper>

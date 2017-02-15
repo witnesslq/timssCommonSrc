@@ -1,0 +1,78 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<!-- 多个类型的数据库定义名称 -->
+	<bean id="vendorProperties"
+		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="properties">
+			<props>
+				<prop key="SQL Server">sqlserver</prop>
+				<prop key="DB2">db2</prop>
+				<prop key="Oracle">oracle</prop>
+				<prop key="MySQL">mysql</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- 数据库模板注册 -->
+	<bean id="databaseIdProvider" class="org.apache.ibatis.mapping.VendorDatabaseIdProvider">
+		<property name="properties" ref="vendorProperties" />
+	</bean>
+
+	<!-- Mybatis Session Factory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="databaseIdProvider" ref="databaseIdProvider" />
+		<property name="configLocation" value="classpath:mybatis/configuration.xml" />
+		<property name="typeAliasesPackage"
+			value="com.timss.asset.bean;com.timss.asset.vo;
+			com.timss.purchase.bean;com.timss.purchase.vo;
+			com.timss.inventory.bean;com.timss.inventory.vo;
+			com.timss.workorder.bean;com.timss.workorder.vo;
+			com.timss.ptw.bean;com.timss.ptw.vo;
+			com.timss.pms.bean;com.timss.pms.vo;
+			com.timss.operation.bean;com.timss.operation.vo;
+			com.timss.finance.bean;com.timss.finance.vo;
+			com.timss.attendance.bean;com.timss.attendance.vo;
+			com.timss.itsm.bean;com.timss.itsm.vo;
+			com.timss.cmdb.bean;com.timss.cmdb.vo;
+			com.yudean.homepage.bean;
+			com.yudean.homepage.vo;
+			com.yudean.itc.dto;
+			com.yudean.itc.bean;
+			com.yudean.itc.dto.sec;
+			com.yudean.itc.dto.batch;
+			com.yudean.itc.dto.workflow;
+			com.yudean.itc.webservice.bean">
+		</property>
+	</bean>
+
+	<!-- scan for mappers and let them be autowired -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage"
+			value="
+			com.yudean.*.dao;
+			com.gdyd.*.dao;
+			com.yudean.itc.*.dao;
+			com.timss.*.dao;" />
+	</bean>
+	
+	<bean id="preparedStatementInterceptorConfig" class="com.yudean.itc.interceptor.helper.PreparedStatementInterceptorConfig">
+		<property name="logBoundSqlSql" value="NO" />
+	</bean>
+	<bean id="preparedStatementFactory" class="com.yudean.itc.interceptor.helper.PreparedStatementFactory" lazy-init="false">
+		<property name="dbHelperconfig">
+			<props>
+				<prop key="sqlserver">com.yudean.itc.interceptor.helper.PreparedStatementInterceptorHelperSqlserver</prop>
+				<prop key="db2">com.yudean.itc.interceptor.helper.PreparedStatementInterceptorHelperDB2</prop>
+				<prop key="oracle">com.yudean.itc.interceptor.helper.PreparedStatementInterceptorHelperOra</prop>
+				<prop key="mysql">com.yudean.itc.interceptor.helper.PreparedStatementInterceptorHelperMySql</prop>
+			</props>
+		</property>
+		<property name="config" ref="preparedStatementInterceptorConfig" />
+		<property name="dataSource" ref="dataSource" />
+		<property name="databaseIdProvider" ref="databaseIdProvider" />
+	</bean>
+</beans>

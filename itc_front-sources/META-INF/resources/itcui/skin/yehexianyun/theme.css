@@ -1,0 +1,52 @@
+.skin-top{background-image:url(img/5b189bed2534825ea1b79ec476bf2eb02f1d08d0.jpg)}.skin-top-left{background-image:url(img/2fa9b92645dd05f6bf4b4ac63f832f804a0888fc.jpg)}.skin-top-right{background-image:url(img/f7446e8839e96ceeba54c5ed3d536436ac0ad9c8.jpg)}.skin-left{background-image:url(img/e9c629d9d6668ab82a183cd62b7013f55d658d7a.jpg)}.skin-left-bottom{background-image:url(img/4dbdd6ac4ec1aba6b331631fa47c014fc3226543.jpg)}
+
+.tA0{color:#927249;border-color:#FFFEFC}
+
+.navitem,
+.navitem-hover,
+.navitem-active,
+.navitem-selected,
+.navitem-options-menu-button,
+.itc_navtree_grouptitle:hover, .itc_navtree_nochildren:hover,.itc_navtree_item:hover,
+.itc_navtree_item_selected,
+.navtree-arrow,
+.navitem-close-button,
+.navitem-selected-close-button,
+.navitem-close-button-hover,
+.kA0,.mE0{	
+	background: url(img/f0c6133d2027f16b3222971a2f5214c7b43e5e5f.png) repeat-x 0 0;
+}
+
+.navitem,
+.navitem-hover,
+.navitem-active,
+.navitem-selected,
+.navitem-options-menu-button {
+    border-color:#FFFEFC;
+    color: #927249;
+}
+
+.itcui-navigation-separator{
+	background-color: #ad8f68;
+}
+
+.title_username,
+.head_link>li>a
+{
+	color:#94754D;
+}
+
+.navitem-selected {
+    border-color:#AD8F68;
+    color: #FFF;
+}
+
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+  background-color: #fdf2db;
+  color:#555555;
+}
+
+.kA0{
+	top:2px;
+}

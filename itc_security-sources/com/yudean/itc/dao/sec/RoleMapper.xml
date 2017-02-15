@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yudean.itc.dao.sec.RoleMapper">
+
+	<sql id="SELECT_ROLE">
+		SELECT SR.ROLE_ID AS ID,
+		       SR.NAME,
+		       SR.ACTIVE AS ACTIVECODE,
+		       SR.UPDATE_TIME AS UPDATETIME,
+		       SR.UPDATED_BY AS UPDATEDBY,
+		       SR.SITE_ID AS SITEID,
+		       ST.SITE_NAME AS SITENAME,
+		       SR.RESERVED as reserved,
+		       SR.SORTNUM as sortNum
+	</sql>
+
+	<insert id="insertRole" parameterType="Role">
+		INSERT INTO SEC_ROLE (ROLE_ID, NAME, ACTIVE, UPDATE_TIME, UPDATED_BY, SITE_ID, RESERVED) 
+		VALUES (#{id},#{name},'Y',#{updateTime},#{updatedBy, jdbcType=VARCHAR}, #{siteId},'N')
+	</insert>
+	
+	<insert id="insertRoleUserMapping" parameterType="map">
+		INSERT INTO SEC_USER_ROLE (   USER_ID, ROLE_ID) 
+		VALUES (#{userId}, #{roleId})
+	</insert>
+	<select id="selectRoleUserMapping" resultType="integer" parameterType="map">
+		SELECT COUNT(1) FROM SEC_USER_ROLE WHERE USER_ID=#{userId} AND ROLE_ID=#{roleId}
+	</select>
+	<delete id="deleteRoleUserMapping" parameterType="map">
+		DELETE FROM SEC_USER_ROLE WHERE USER_ID=#{userId} AND ROLE_ID=#{roleId}
+	</delete>
+	
+	<insert id="insertRoleGroupMapping" parameterType="map">
+		INSERT INTO SEC_GROUP_ROLE (GROUP_ID, ROLE_ID)
+		VALUES (#{groupId}, #{roleId})
+	</insert>
+	
+	<delete id="deleteRole" parameterType="string">
+		DELETE FROM SEC_ROLE WHERE ROLE_ID=#{value}
+	</delete>
+	
+	<!-- 更新角色数据 -->
+	<update id="updateRole" parameterType="Role">
+		UPDATE SEC_ROLE SET NAME=#{name},UPDATE_TIME = #{updateTime},
+			UPDATED_BY = #{updatedBy, jdbcType=VARCHAR} WHERE ROLE_ID = #{id}
+	</update>
+	
+	<select id="selectRole" resultType="Role" parameterType="map">
+		<include refid="SELECT_ROLE"/>
+		FROM SEC_ROLE SR LEFT JOIN SEC_SITE ST ON SR.SITE_ID=ST.SITE_ID
+		WHERE ROLE_ID = #{roleId}
+	</select>
+	<select id="selectRoleByName" resultType="Role" parameterType="map">
+		<include refid="SELECT_ROLE"/>
+		FROM SEC_ROLE SR LEFT JOIN SEC_SITE ST ON SR.SITE_ID=ST.SITE_ID
+		WHERE NAME = #{roleName}
+	</select>
+	<select id="selectRolesByPrivilege" resultType="Role" parameterType="map">
+		<include refid="SELECT_ROLE"/>
+		FROM SEC_ROLE SR LEFT JOIN SEC_SITE ST ON SR.SITE_ID=ST.SITE_ID
+		WHERE 
+		(SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+		AND (EXISTS (SELECT 1 FROM SEC_ROLE_MENU SRM 
+						WHERE SR.ROLE_ID=SRM.ROLE_ID AND SRM.MENU_ID=#{privilegeId})
+			OR EXISTS (SELECT 1 FROM SEC_ROLE_FUNCTION SRF 
+						WHERE SR.ROLE_ID=SRF.ROLE_ID AND SRF.FUNC_ID=#{privilegeId})
+			)						
+		ORDER BY SR.NAME
+	</select>	
+	
+	<select id="selectOwnActiveRoles" resultType="Role" parameterType="map">
+		<include refid="SELECT_ROLE"/>
+		FROM SEC_ROLE SR LEFT JOIN SEC_SITE ST ON SR.SITE_ID=ST.SITE_ID
+		WHERE ROLE_ID IN (
+			SELECT SR_.ROLE_ID
+			FROM SEC_ROLE SR_ INNER JOIN SEC_USER_ROLE SUR ON SR_.ROLE_ID=SUR.ROLE_ID
+			WHERE (SR_.ACTIVE IS NULL OR SR_.ACTIVE = 'Y')
+				AND SUR.USER_ID=#{userId}
+			UNION
+			SELECT SR_1.ROLE_ID
+			FROM SEC_ROLE SR_1 INNER JOIN SEC_GROUP_ROLE SGR ON SR_1.ROLE_ID=SGR.ROLE_ID
+				INNER JOIN SEC_GROUP_USER SGU ON SGU.GROUP_ID= SGR.GROUP_ID
+			WHERE (SR_1.ACTIVE IS NULL OR SR_1.ACTIVE = 'Y')
+				AND SGU.USER_ID=#{userId}
+		) 
+		<if test="siteId != null">
+			AND SR.SITE_ID=#{siteId}
+		</if>		
+		ORDER BY SR.NAME
+	</select>
+	
+	<select id="selectAllActiveRoles" resultType="Role" parameterType="string">
+		<include refid="SELECT_ROLE"/>
+		FROM SEC_ROLE SR LEFT JOIN SEC_SITE ST ON SR.SITE_ID=ST.SITE_ID
+		WHERE (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+		<if test="value != null">
+			AND SR.SITE_ID=#{value}
+		</if>
+		AND ST.ACTIVE = 'Y'
+		ORDER BY SR.ROLE_ID
+	</select>
+	
+	<delete id="deleteAllRolesFromUser" parameterType="string">
+		DELETE FROM SEC_USER_ROLE
+		WHERE USER_ID=#{value}
+	</delete>
+	
+	<delete id="deleteRolesFromUser" parameterType="map">
+		DELETE FROM SEC_USER_ROLE SUR
+		WHERE USER_ID=#{userId}
+			AND EXISTS (SELECT 1 FROM SEC_ROLE SR WHERE SR.SITE_ID=#{siteId} AND SR.ROLE_ID=SUR.ROLE_ID)
+	</delete>
+	
+	<select id="selectRolesOfGivenUser" resultType="Role" parameterType="map">
+		<include refid="SELECT_ROLE"/> , SR.isInheritedCode, SR.inheritedFrom
+		FROM (
+			SELECT SR_.*, 'N' AS isInheritedCode, NULL as inheritedFrom
+			FROM SEC_ROLE SR_ INNER JOIN SEC_USER_ROLE SUR ON SR_.ROLE_ID=SUR.ROLE_ID
+			WHERE 
+				(SR_.ACTIVE IS NULL OR SR_.ACTIVE = 'Y')
+				AND SUR.USER_ID=#{userId}
+			UNION
+			SELECT SR_.*, 'Y' AS isInheritedCode, SG.NAME as inheritedFrom
+			FROM SEC_ROLE SR_ INNER JOIN SEC_GROUP_ROLE SGR ON SR_.ROLE_ID=SGR.ROLE_ID
+				INNER JOIN SEC_GROUP_USER SGU ON SGU.GROUP_ID=SGR.GROUP_ID
+				INNER JOIN SEC_GROUP SG ON SG.GROUP_ID=SGU.GROUP_ID
+			WHERE 
+				(SR_.ACTIVE IS NULL OR SR_.ACTIVE = 'Y')
+				AND SGU.USER_ID=#{userId}
+		) SR LEFT JOIN SEC_SITE ST ON SR.SITE_ID=ST.SITE_ID
+		ORDER BY SR.NAME
+	</select>
+	
+	<select id="selectRolesOfGivenGroup" resultType="Role" parameterType="map">
+		<include refid="SELECT_ROLE"/>
+		FROM SEC_ROLE SR INNER JOIN SEC_GROUP_ROLE SGR ON SR.ROLE_ID=SGR.ROLE_ID
+			LEFT JOIN SEC_SITE ST ON SR.SITE_ID=ST.SITE_ID
+		WHERE SGR.GROUP_ID=#{groupId}
+		AND (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+		ORDER BY SR.NAME
+	</select>
+	
+	<delete id="deleteAllRolesFromGroup" parameterType="string">
+		DELETE FROM SEC_GROUP_ROLE WHERE GROUP_ID=#{value}
+	</delete>
+	
+	<delete id="deleteRolesFromGroup" parameterType="map">
+		DELETE FROM SEC_GROUP_ROLE SGR
+		WHERE EXISTS (SELECT 1 FROM SEC_ROLE SR WHERE SR.SITE_ID=#{siteId} AND SR.ROLE_ID=SGR.ROLE_ID)
+	</delete>
+	
+	<delete id="deleteRoleGroupMapping" parameterType="map">
+		DELETE FROM SEC_GROUP_ROLE WHERE GROUP_ID =#{groupId} AND ROLE_ID=#{roleId}
+	</delete>
+	
+	<select id="selectRoles"  parameterType="map" resultType="Role">
+		<include refid="SELECT_ROLE"/>
+		FROM SEC_ROLE SR LEFT JOIN SEC_SITE ST ON SR.SITE_ID=ST.SITE_ID
+		WHERE (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+		<if test="PAGE.params.siteId != null">
+			AND SR.SITE_ID=#{PAGE.params.siteId}
+		</if>
+		<if test="PAGE.params.searchBy != null">
+			AND (lower(SR.ROLE_ID) LIKE '%${PAGE.params.searchBy}%' OR lower(SR.NAME) LIKE '%${PAGE.params.searchBy}%')
+		</if>
+		ORDER BY SR.SORTNUM desc, SR.ROLE_ID
+	</select>
+	
+	<insert id="insertRoleFunctionMapping" parameterType="map">
+		INSERT INTO SEC_ROLE_FUNCTION(ROLE_ID, FUNC_ID) VALUES(#{roleId}, #{funcId})
+	</insert>
+	<delete id="deleteRoleFunctionMapping" parameterType="map">
+		DELETE FROM SEC_ROLE_FUNCTION WHERE ROLE_ID=#{roleId} AND FUNC_ID=#{funcId}
+	</delete>
+	<insert id="insertRoleMenuMapping" parameterType="map">
+		INSERT INTO SEC_ROLE_MENU(ROLE_ID, MENU_ID) VALUES(#{roleId}, #{menuId})
+	</insert>
+	<delete id="deleteRoleMenuMapping" parameterType="map">
+		DELETE FROM SEC_ROLE_MENU WHERE ROLE_ID=#{roleId} AND MENU_ID=#{funcId}
+	</delete>
+	
+	<select id="selectUserWithSpecificRole" parameterType="map" resultType="SecureUser">
+		select 
+					SU.USER_ID AS ID, SU.NAME, SU.JOB, SU.TITLE,
+			       SU.EMAIL, SU.MOBILE, SU.OFFICE_TEL AS OFFICETEL, SU.MICRO_TEL AS MICROTEL,
+				   SU.SORT_NUM AS SORTNUM, SU.ACTIVE AS ActiveCode,
+				   SU.SYNC_IND AS SyncIndCode,
+				   SU.SUPER_ADMIN_IND as superAdminIndCode,
+				   SU.ATTRIBUTE2 as arrivalDate,
+				   SU.ATTRIBUTE3 as resignDate,
+				   SU.ATTRIBUTE4 as officeAddr
+		FROM (
+				SELECT SU.* , 'N' AS hasInheritedRoleCode
+				FROM SEC_USER SU INNER JOIN SEC_USER_ROLE SUR ON SU.USER_ID = SUR.USER_ID
+				WHERE (DEL_IND IS NULL OR DEL_IND != 'Y')
+					AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')					
+					AND SUR.ROLE_ID=#{roleId}
+				UNION 
+				SELECT SU.*	, 'Y' AS hasInheritedRoleCode
+				FROM SEC_USER SU INNER JOIN SEC_GROUP_USER SGU ON SGU.USER_ID = SU.USER_ID
+				INNER JOIN SEC_GROUP_ROLE SGR ON SGR.GROUP_ID = SGU.GROUP_ID
+				WHERE (DEL_IND IS NULL OR DEL_IND != 'Y')
+					AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')
+					AND SGR.ROLE_ID=#{roleId}
+			) SU 		   
+        WHERE 1=1  
+        <if test="orgs != null">
+        	AND EXISTS (SELECT 1 FROM SEC_ORGANIZATION_USER SOU 
+        		WHERE SOU.USER_ID = SU.USER_ID
+        			AND sou.org_code in
+        	<foreach collection="orgs" item="item" open="(" separator="," close=")">
+        		#{item}
+        	</foreach>
+        	)
+        </if>
+        <if test="onlyActive == true">
+        	and su.active='Y' 
+        </if>
+        ORDER BY SU.ACTIVE DESC,SU.SORT_NUM DESC, SU.SORT_SUBNUM ASC	
+	</select>	
+</mapper>

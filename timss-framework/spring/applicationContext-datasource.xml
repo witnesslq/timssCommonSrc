@@ -1,0 +1,53 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xmlns:context="http://www.springframework.org/schema/context"
+     xmlns:tx="http://www.springframework.org/schema/tx"
+     xsi:schemaLocation="
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+     http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+ 
+	<context:property-placeholder location="classpath:config.properties" />
+	
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+
+		<!-- 数据库连接池配置 -->
+		<property name="initialSize" value="3" /><!-- 初始化连接数量 -->
+		<property name="maxActive" value="100" /><!-- 最大连接数量 -->
+		<property name="maxIdle" value="100" /><!-- 最大空闲连接数量 -->
+		<property name="minIdle" value="3" /><!-- 最小空闲连接数量 -->
+		<property name="maxWait" value="10000" /> <!-- 最大等待时间，当没有可用连接时，连接池等待连接释放的最大时间，超过该时间限制会抛出异常 -->
+		<property name="poolPreparedStatements" value="true" />
+		<!-- 超过removeAbandonedTimeout时间后，是否进 行没用连接（废弃）的回收（默认为false，调整为true) -->
+        <property name="removeAbandoned"><value>true</value></property>
+        <property name="removeAbandonedTimeout"><value>180</value></property><!-- 超过时间限制，回收没有用(废弃)的连接（默认为 300秒，调整为180） -->
+		<property name="testWhileIdle"><value>true</value></property> <!-- 打开检查,用异步线程evict进行检查 -->
+        <property name="testOnBorrow"><value>false</value></property>
+        <property name="testOnReturn"><value>false</value></property>
+        <property name="validationQuery"><value>select 1 from dual</value></property>
+        <property name="validationQueryTimeout"><value>1</value></property>
+        <!-- 设置的Evict线程的时间，单位ms，大于0才会开启evict检查线程 -->
+        <property name="timeBetweenEvictionRunsMillis"><value>60000</value></property>
+        <!-- 代表每次检查链接的数量，建议设置和maxActive一样大，这样每次可以有效检查所有的链接. -->
+        <property name="numTestsPerEvictionRun"><value>100</value></property>
+ 
+	</bean>	
+		
+
+    <!-- transaction manager, use JtaTransactionManager for global tx -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <bean id="txDefinition"
+		class="org.springframework.transaction.support.DefaultTransactionDefinition">
+		<property name="propagationBehaviorName" value="PROPAGATION_REQUIRED"></property>
+	</bean>
+	<tx:annotation-driven />
+    
+
+</beans>

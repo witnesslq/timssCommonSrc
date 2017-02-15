@@ -1,0 +1,70 @@
+.tA0{color:#ECECEC;border:0}
+
+.navitem,
+.navitem-hover,
+.navitem-active,
+.navitem-selected,
+.navitem-options-menu-button,
+.itc_navtree_grouptitle:hover, .itc_navtree_nochildren:hover,.itc_navtree_item:hover,
+.itc_navtree_item_selected,
+.navtree-arrow,
+.navitem-close-button,
+.navitem-selected-close-button,
+.navitem-close-button-hover,
+.kA0,.mE0{	
+	background: url(img/216e1d46e4f742950f89e3b022bb03f743ac2600.png) repeat-x 0 0;
+}
+
+.kA0{
+	display: none;
+}
+
+.navitem,
+.navitem-hover,
+.navitem-active,
+.navitem-selected,
+.navitem-options-menu-button {
+    border-color:#FEDAE3;
+    color: #ECECEC;
+}
+
+.itcui-navigation-separator{
+	background-color: #000;
+}
+
+.title_username,
+.head_link>li>a
+{
+	color:#fff;
+}
+
+
+.navitem-selected {
+    color: #FFF;
+}
+
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+  background-color: #f0f0f0;
+  color:#555555;
+}
+
+.itc_navtree_grouptitle,
+.itc_navtree_item,
+.navtree_subitem,
+.itc_navtree_nochildren{
+	color: #DADADB;
+	text-shadow: 1px 1px 1px rgba(0,0,0,.2);
+}
+
+#mainframe_navtree{
+	border-right-color: #fff;
+	border-right-width: 1px;
+	border-right-style: solid;
+}
+
+
+.itcui-navigation-ul{
+	margin-top:3px;
+}
+

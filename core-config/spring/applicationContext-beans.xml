@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+	<!-- ITC全局BEAN -->
+
+	<bean class="com.yudean.itc.SecurityBeanHelper" lazy-init="false" depends-on="preparedStatementFactory"/>
+
+	<bean id="ItcAnnotationConfig" class="com.yudean.itc.bean.AnnotationConfigBean">
+		<property name="scanAnnotationClass"
+			value="
+				com.yudean.itc.annotation.EipAnnotation;
+			" />
+		<property name="scanAnnotationMethod"
+			value="
+				com.yudean.itc.annotation.HopAnnotation;
+			" />
+		<property name="scanPackage" value="
+				com.yudean.*.listener;
+				com.timss.*.listener;
+			" />
+		<property name="initClass"
+			value="
+				com.yudean.interfaces.service.impl.EipInterfaceService;
+				com.yudean.homepage.service.core.IHomepageAnnotService;
+			" />
+	</bean>
+
+	<bean id="dataCacheProviderFactory"
+		class="com.yudean.itc.manager.support.impl.datacachemgr.DataCacheProviderFactory" depends-on="blobDatabaseProviderFactor">
+		<property name="cacheTableName" value="B_CACHE_TMP" />
+		<property name="storageTableName" value="B_CACHE" />
+		<property name="cacheTablePkColunmName" value="ID" />
+		<property name="cacheTableBlobColunmName" value="CACHECONTENT" />
+		<property name="defautlProviderMapping" value="Application" />
+		
+		<property name="cacheProviderMap">
+			<props>
+				<prop key="Application">com.yudean.itc.manager.support.impl.datacachemgr.DataCacheDefault</prop>
+				<prop key="Permanent_Day">com.yudean.itc.manager.support.impl.datacachemgr.DataCachePermanentDay</prop>
+			</props>
+		</property>
+	</bean>
+</beans>

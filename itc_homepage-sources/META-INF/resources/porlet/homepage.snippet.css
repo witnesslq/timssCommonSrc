@@ -1,0 +1,16 @@
+.homepage ul{
+	margin-left:-5px;
+}
+
+.homepage ul li{
+	margin-bottom:5px;
+	font-size:12px;
+}
+
+.homepage .textStyle{
+	width:100%;
+};
+
+.homepage .hide{
+	display:none;
+}}

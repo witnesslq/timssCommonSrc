@@ -1,0 +1,36 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+ 
+	<!-- Mybatis Session Factory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mybatis/configuration.xml" />
+		<property name="typeAliasesPackage"
+			value="com.timss.asset.bean;com.timss.asset.vo;
+			com.timss.purchase.bean;com.timss.purchase.vo;
+			com.timss.inventory.bean;com.timss.inventory.vo;
+			com.timss.workorder.bean;com.timss.workorder.vo;
+			com.timss.ptw.bean;com.timss.ptw.vo;
+			com.timss.pms.bean;com.timss.pms.vo;
+			com.timss.operation.bean;com.timss.operation.vo;
+			com.timss.finance.bean;com.timss.finance.vo;
+			com.timss.attendance.bean;com.timss.attendance.vo;
+			com.timss.demo.bean;com.timss.demo.vo;
+			com.timss.workflow.bean;com.timss.workflow.vo;
+			com.timss.homepage.bean;com.timss.homepage.vo;
+			com.timss.framework.bean;com.timss.framework.vo;
+			com.yudean.itc.dto;
+			com.yudean.itc.dto.sec;
+			com.yudean.itc.dto.workflow">
+		</property>
+	</bean>
+	
+	<!-- scan for mappers and let them be autowired -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.timss.*.dao;com.yudean.itc.dao" />
+	</bean>
+    
+    
+</beans>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yudean.itc.dao.sec.SecureFunctionMapper">
+	<sql id="SELECT_FUNC">
+		SELECT FUNC.FUNC_ID AS ID
+			,FUNC.NAME
+			,FUNC.REMARKS
+			,FUNC.PARENT_FUNC_ID AS PARENTFUNCID
+			,FUNC.MENU_ID AS PARENTMENUID
+			,FUNC.UPDATED_BY as updateBy
+			,FUNC.UPDATE_TIME as updateTime
+	</sql>
+	
+	<select id="selectSubFunctionsOfGivenMenu" resultType="SecureFunction" parameterType="string">
+		<include refid="SELECT_FUNC"/>
+			, numberOfSubFunction
+		FROM SEC_FUNCTION FUNC
+		LEFT JOIN (SELECT PARENT_FUNC_ID ,COUNT(1) AS numberOfSubFunction
+					 FROM SEC_FUNCTION GROUP BY PARENT_FUNC_ID) SUB_FUNC
+			ON FUNC.FUNC_ID = SUB_FUNC.PARENT_FUNC_ID
+		WHERE FUNC.MENU_ID=#{value}	
+		and FUNC.ACTIVE='Y'      				
+	</select>
+	
+	<select id="selectSubFunctions" resultType="SecureFunction" parameterType="string">
+	<include refid="SELECT_FUNC"/>
+			, numberOfSubFunction
+		FROM SEC_FUNCTION FUNC
+		LEFT JOIN (SELECT PARENT_FUNC_ID ,COUNT(1) AS numberOfSubFunction
+					 FROM SEC_FUNCTION GROUP BY PARENT_FUNC_ID) SUB_FUNC
+			ON FUNC.FUNC_ID = SUB_FUNC.PARENT_FUNC_ID
+		WHERE 1=1
+		<choose>
+		       		<when test="value == null">
+		       			and (FUNC.PARENT_FUNC_ID='0' OR FUNC.PARENT_FUNC_ID IS NULL)
+		       		</when>
+		       		<otherwise>
+		       			AND FUNC.PARENT_FUNC_ID=#{value}
+		       		</otherwise>
+		</choose> 
+		AND FUNC.ACTIVE='Y'
+	</select>
+	
+	<update id="updateFunctionStatus" parameterType="map">
+		update sec_function set active=
+		<if test="status == true">
+			'Y'
+		</if>
+		<if test="status == false">
+			'N'
+		</if>
+		where func_id in 
+		<foreach collection="ids" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+	<select id="getExportedFunctions" parameterType="String" resultType="String">
+		select funcid from sec_function_export where siteid=#{siteId} or siteid='*'
+	</select>
+</mapper>

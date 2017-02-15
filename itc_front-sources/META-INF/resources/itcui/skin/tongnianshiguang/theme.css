@@ -1,0 +1,57 @@
+.fn-bg{background-image:url(img/08630297e01fa0c9b8cc6c9c4d21f1df802924f7.png);background-repeat:no-repeat}.skin-top{background-image:url(img/0125c0844a10f996c5de943dff842dfeb93a9890.gif)}.skin-top-right{background-image:url(img/906b154f8ddc2e6f9d981c232abd311dcc088617.jpg)}.skin-left{background-image:url(img/5ba1b0dc79a473fbb4eb8c5999816eedbbf6a2ff.gif)}.skin-left-bottom{background-image:url(img/06f950d57478e39999e1f2fd89ee03502700d300.jpg)}
+
+.tA0{color:#927249;border-color:#FFFEFC}
+
+.navitem,
+.navitem-hover,
+.navitem-active,
+.navitem-selected,
+.navitem-options-menu-button,
+.itc_navtree_grouptitle:hover, .itc_navtree_nochildren:hover,.itc_navtree_item:hover,
+.itc_navtree_item_selected,
+.navtree-arrow,
+.navitem-close-button,
+.navitem-selected-close-button,
+.navitem-close-button-hover,
+.kA0,.mE0{	
+	background: url(img/08630297e01fa0c9b8cc6c9c4d21f1df802924f7.png) repeat-x 0 0;
+}
+
+.navitem,
+.navitem-hover,
+.navitem-active,
+.navitem-selected,
+.navitem-options-menu-button {
+    border-color:#FFFEFC;
+    color: #927249;
+}
+
+.navitem-selected {
+    color: #FFF;
+	border-color: #AD8F68;
+}
+
+.itcui-navigation-separator{
+	background-color: #ad8f68;
+}
+
+.title_username,
+.head_link>li>a
+{
+	color:#927249;
+}
+
+.navitem-selected {
+    border-color:#AD8F68;
+    color: #FFF;
+}
+
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+  background-color: #FDF2DB;
+  color:#555555;
+}
+
+.kA0{
+	top:2px;
+}

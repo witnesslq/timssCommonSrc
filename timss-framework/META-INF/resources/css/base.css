@@ -1,0 +1,88 @@
+.ml4 {
+	margin-left: 4px;
+}
+
+.mr4 {
+	margin-right: 4px;
+}
+
+.mt4 {
+	margin-top: 4px;
+}
+
+.mt5 {
+	margin-top: 5px;
+}
+
+.ml6 {
+	margin-left: 6px;
+}
+
+.mr6 {
+	margin-right: 6px;
+}
+
+.mt6 {
+	margin-top: 6px;
+}
+
+.ml8 {
+	margin-left: 8px;
+}
+
+.mr8 {
+	margin-right: 8px;
+}
+
+.mt8 {
+	margin-top: 8px;
+}
+
+.mt12 {
+	margin-top: 12px;
+}
+
+.mt14 {
+	margin-top: 14px;
+}
+
+.ml12 {
+	margin-left: 12px;
+}
+
+.mr12 {
+	margin-right: 12px;
+}
+
+.pl4 {
+	padding-left: 4px;
+}
+
+.fl {
+	float: left;
+}
+
+.fr {
+	float: right;
+}
+
+.ovh {
+	overflow: hidden;
+}
+
+.ft12 {
+	font-size: 12px;
+}
+
+.ft14 {
+	font-size: 14px;
+}
+
+.middle {
+	margin: 0 auto;
+}
+
+.fred {
+	color: #FF0000
+}
+;

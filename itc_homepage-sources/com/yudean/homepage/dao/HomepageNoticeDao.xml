@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+    <!DOCTYPE mapper 
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yudean.homepage.dao.HomepageNoticeDao">
+	<!-- 可以重复使用的sql语句可以用 sql这种方式包含起来，在后面调用即可 -->
+	<sql id="column">
+		CODE,
+  		CONTENT,
+  		STATUS,
+  		STATUSDATE,
+  		USERID,
+  		SITEID,
+  		CREATEDBY,
+  		CREATETIME,
+  		UPDATEDBY,
+  		UPDATETIME,
+  		OPERURL,
+  		STATUSNAME,
+  		NAME,
+  		ACTIVE
+  	</sql>
+	<!-- 如果要往表中插入空数据，则需要设置jdbcType  -->
+	<sql id="property">
+		(#{code},
+		#{content,jdbcType=VARCHAR},
+		#{status,jdbcType=VARCHAR},
+		#{statusdate,jdbcType=TIMESTAMP},
+		#{userid,jdbcType=VARCHAR},
+		#{siteId,jdbcType=VARCHAR},
+		#{createdBy,jdbcType=VARCHAR},
+		#{createTime,jdbcType=TIMESTAMP},
+		#{updatedBy,jdbcType=VARCHAR},
+		#{updateTime,jdbcType=TIMESTAMP},
+		#{operUrl,jdbcType=VARCHAR},
+		#{statusName,jdbcType=VARCHAR},
+		#{name,jdbcType=VARCHAR},
+		#{active,jdbcType=VARCHAR})
+	</sql>	
+	
+	<select id="queryNoticeByUser" resultType="NoticeBean" databaseId="oracle">
+		SELECT <include refid="column"/>
+		  FROM (SELECT <include refid="column"/>
+		          FROM HOP_NOTICE H
+		         WHERE H.USERID = #{userId,jdbcType=VARCHAR}
+		           AND H.SITEID = #{siteId,jdbcType=VARCHAR}
+		           AND H.ACTIVE = #{active,jdbcType=VARCHAR}
+		         ORDER BY H.STATUSDATE DESC)
+		  <where>
+		  	<if test="rownum != null">ROWNUM <![CDATA[<]]> #{rownum,jdbcType=NUMERIC} </if>
+		  </where>
+	</select>
+	
+	<select id="queryOneNotice" resultType="NoticeBean">
+		SELECT <include refid="column"/>
+  		 FROM HOP_NOTICE H
+ 		WHERE H.CODE = #{code}
+   		  AND H.SITEID = #{siteId}
+	</select>
+	
+	<insert id="insertNotice" parameterType="NoticeBean">
+		INSERT INTO HOP_NOTICE(<include refid="column"/>) 
+		VALUES <include refid="property"/>
+	</insert>
+	
+	<update id="updateNotic" parameterType="NoticeBean">
+		UPDATE HOP_NOTICE H
+  		<set>
+			<if test="content != null"> H.CONTENT=#{content,jdbcType=VARCHAR}, </if>
+			<if test="status != null"> H.STATUS=#{status,jdbcType=VARCHAR}, </if>
+			<if test="statusdate != null"> H.STATUSDATE=#{statusdate,jdbcType=TIMESTAMP}, </if>
+			<if test="userid != null"> H.USERID=#{userid,jdbcType=VARCHAR}, </if>
+			<if test="siteId != null"> H.SITEID=#{siteId,jdbcType=VARCHAR}, </if>
+			<if test="createdBy != null"> H.CREATEDBY=#{createdBy,jdbcType=VARCHAR}, </if>
+			<if test="createTime != null"> H.CREATETIME=#{createTime,jdbcType=TIMESTAMP}, </if>
+			<if test="updatedBy != null"> H.UPDATEDBY=#{updatedBy,jdbcType=VARCHAR}, </if>
+			<if test="updateTime != null"> H.UPDATETIME=#{updateTime,jdbcType=TIMESTAMP}, </if>
+			<if test="operUrl != null"> H.OPERURL=#{operUrl,jdbcType=VARCHAR}, </if>
+			<if test="statusName != null"> H.STATUSNAME=#{statusName,jdbcType=VARCHAR}, </if>
+			<if test="name != null"> H.NAME=#{name,jdbcType=VARCHAR}, </if>
+			<if test="active != null"> H.ACTIVE=#{active,jdbcType=VARCHAR}, </if>
+  		</set>
+ 		WHERE H.CODE = #{code}
+ 		  AND H.SITEID = #{siteId}
+	</update>
+	
+	<sql id="siteActiveColunm">
+		SELECT COUNT(1) SITECOUNT, B.SITE_ID SITEID, TO_CHAR(B.OPT_TIME, 'YYYYMM-DD') CDATE
+	</sql>	
+	<sql id="siteActiveMaxColunm">
+		SELECT MAX(COUNT(1)) MAXCOUNT
+	</sql>
+	<sql id="siteActiveMinColunm">
+		SELECT MIN(COUNT(1)) MINCOUNT
+	</sql>
+	<sql id="siteActiveTable">
+		  FROM B_LOG B
+		 WHERE B.CAT_ID = 10
+		   AND B.OPT_TIME <![CDATA[<]]> TRUNC(#{curDate})
+		   AND B.OPT_TIME <![CDATA[>]]> TRUNC(#{curDate}) - #{stCount}
+		   AND B.SITE_ID IS NOT NULL
+		 GROUP BY B.SITE_ID, TO_CHAR(B.OPT_TIME, 'YYYYMM-DD')
+		 ORDER BY TO_CHAR(B.OPT_TIME, 'YYYYMM-DD') DESC
+	</sql>
+	
+	<select id="querySiteActiveDate" resultType="SiteActiveData" databaseId="oracle">
+		<include refid="siteActiveColunm"/>
+		<include refid="siteActiveTable"/>
+	</select>
+	
+	<select id="querySiteActiveMaxCount" resultType="Map" databaseId="oracle">
+		<include refid="siteActiveMaxColunm"/>
+		<include refid="siteActiveTable"/>
+	</select>
+	
+	<select id="querySiteActiveMinCount" resultType="Map" databaseId="oracle">
+		<include refid="siteActiveMinColunm"/>
+		<include refid="siteActiveTable"/>
+	</select>
+	
+</mapper> 

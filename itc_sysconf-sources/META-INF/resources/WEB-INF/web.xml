@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	version="3.0">
+	<servlet>
+		<description></description>
+		<display-name>RoleServlet</display-name>
+		<servlet-name>RoleServlet</servlet-name>
+		<servlet-class>com.yudean.itc.servlet.RoleServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>RoleServlet</servlet-name>
+		<url-pattern>/role</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<description></description>
+		<display-name>UserConfigServlet</display-name>
+		<servlet-name>UserConfigServlet</servlet-name>
+		<servlet-class>com.yudean.itc.servlet.UserConfigServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>UserConfigServlet</servlet-name>
+		<url-pattern>/userConfig</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<description></description>
+		<display-name>GroupServlet</display-name>
+		<servlet-name>GroupServlet</servlet-name>
+		<servlet-class>com.yudean.itc.servlet.GroupServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>GroupServlet</servlet-name>
+		<url-pattern>/group</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<description></description>
+		<display-name>TreeServlet</display-name>
+		<servlet-name>TreeServlet</servlet-name>
+		<servlet-class>com.yudean.itc.servlet.TreeServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>TreeServlet</servlet-name>
+		<url-pattern>/tree</url-pattern>
+	</servlet-mapping>
+	<!--站内通知管理-->
+	<servlet>
+		<servlet-name>AnnouncementServlet</servlet-name>
+		<servlet-class>com.yudean.itc.servlet.AnnouncementServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>AnnouncementServlet</servlet-name>
+		<url-pattern>/announce</url-pattern>
+	</servlet-mapping>
+</web-app>

@@ -1,0 +1,42 @@
+.updateItem {
+	padding: 0px 30px 0px 30px;
+	font-family: "Microsoft Yahei", verdana;
+}
+
+.updateItem .OneItem {
+	margin: 0px 0px 80px 0px;
+}
+
+.updateItem .ver {
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.updateItem .date {
+	margin-left: 30px;
+	font-size: 14px;
+	color: rgb(191, 191, 191);
+}
+
+.updateItem ul {
+	font-size: 14px;
+	margin-top: -15px;
+}
+
+.updateItem ol {
+	font-size: 14px;
+	margin-top: -15px;
+}
+
+.updateItem li {
+	font-size: 14px;
+	margin-top: 5px;
+	margin-left: 25px;
+}
+
+.updateItem h5 {
+	font-size: 14px;
+	font-weight: normal;
+	margin-top: 5px;
+	margin-left: 20px;
+}

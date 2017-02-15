@@ -1,0 +1,238 @@
+.ml4{
+	margin-left:4px;
+}
+.mr4{
+	margin-right:4px;
+}
+.mt4{
+	margin-top: 4px;
+}
+.mt5{
+	margin-top: 5px;
+}
+.ml6{
+	margin-left:6px;
+}
+.mr6{
+	margin-right:6px;
+}
+.mt6{
+	margin-top: 6px;
+}
+.ml8{
+	margin-left:8px;
+}
+.mr8{
+	margin-right:8px;
+}
+.mt8{
+	margin-top: 8px;
+}
+.mt12{
+	margin-top: 12px;
+}
+.mt14{
+	margin-top: 14px;
+}
+.ml12{
+	margin-left: 12px;
+}
+.mr12{
+	margin-right: 12px;
+}
+.pl4{
+	padding-left: 4px;
+}
+.fl{
+	float: left;
+}
+.fr{
+	float: right;
+}
+.ovh{
+	overflow: hidden;
+}
+/*
+	文件上传组件
+*/
+.itc_upload_wrap{
+	background-color: rgb(230, 236, 245);
+	border-bottom-left-radius: 3px;
+	border-bottom-right-radius: 3px;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
+	color: rgb(34, 34, 34);
+	float: left;
+	font-size: 12px;
+	height: 44px;
+	line-height: 16px;
+	width: 260px;
+	zoom: 1;
+	margin-right: 4px;
+	margin-bottom: 4px;
+}
+.itc_upload_icon_demo{
+	margin-bottom: 0px;
+	margin-left: 4px;
+	margin-right: 0px;
+	margin-top: 7px;
+	display: block;
+	background-image: url("../images/doc_file.png");
+	width: 32px;
+	height: 32px;
+	float: left;
+}
+.itc_upload_detail_wrap{
+	float: left;
+	display: block;
+}
+.itc_upload_filename{
+	font-size:12px;
+	height:24px;
+	width:214px;
+	padding-left:4px;
+	padding-top:4px
+}
+.itc_upload_del{
+	height: 180x;
+	width: 36px;
+	float: right;
+	margin-right:4px;
+}
+.itc_upload_progress_line{
+	width: 200px;
+	height: 24px;
+	padding-left:4px;
+}
+.itc_upload_progess_wrap{
+	width: 50px;
+	height: 8px;
+	border-top-color:rgb(180,180,180);
+	border-top-width: 1px;
+	border-top-style: solid;
+	border-bottom-color:rgb(180,180,180);
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	border-left-color:rgb(180,180,180);
+	border-left-width: 1px;
+	border-left-style: solid;
+	border-right-color:rgb(180,180,180);
+	border-right-width: 1px;
+	border-right-style: solid;
+	margin-top: 3px;
+	float: left;
+}
+.itc_upload_progress_txt{
+	float: left;
+	color: rgb(180,180,180);
+	font-size: 12px;
+	display: block;
+	height: 14px;
+	width: 210px;
+	padding-left: 4px;
+}
+
+.itc_upload_progress_bar{
+	display: block;
+	height: 4px;
+	background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAAGCAIAAABmRdhlAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAACpJREFUeNpibL2eysDAwPL39x8Q9f3XTxD1+xeY9/fnbxD18/dfIAUQYABfZxCIjXyiVgAAAABJRU5ErkJggg==");
+	margin-left: 1px;
+	margin-top: 1px;
+}
+
+.itc_upload_finish,.itc_upload_fail{
+	font-size: 12px;
+	float: left;
+	padding-left: 4px;
+	width: 130px;
+	overflow: hidden;
+	height: 16px;
+	display: block;
+}
+
+.itc_upload_finish{
+	color: #459830;	
+	
+}
+
+.itc_upload_fail{
+	color: #c00;	
+}
+
+.itc_link,.itc_link_add,.itc_link:active,.itc_link:visited
+{
+	color: rgb(0, 51, 153);
+	font-size: 12px;
+	cursor:pointer;
+}
+
+.itc_link_add:before{
+	content: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAOxJREFUeNqMk78OAUEQxm85wUkUopDoRSiphFbCC6glnkijEa+hU2tUOr1OopAIcqxvZC45Y+/MJL/c7bdz383sH2Ot9eJhjKHHBIzADfhgCbY0IfM/QhxEH8xBnVM6YBGNZX7G+40eWIMjj3fgALqOXKdBHlyFdgEFrQH1YYRmWFcZULyUWmIFJVAUGrUQaAxo6wZgGNPuoA3G2grKoCrKD4SWugZPEDrWINQaqCPNwCa8qwws34EocqxlZaLv+PgEaqABWtx7Ezx4N/4abPgCncGUNTraFZ77PqIJ15n+POMDFRmswF7mvwUYAEMhTS+Om9i8AAAAAElFTkSuQmCC");
+	height:16px;
+	width:16px;
+}
+
+.itc_upload_icon{
+	width: 32px;
+	height: 32px;
+	display: block;
+	float:left;
+	margin-left:8px;
+	margin-top:6px;
+}
+
+.icon_png{
+	background-image:url("../images/fileicon/png.png");
+}
+
+.icon_bmp{
+	background-image:url("../images/fileicon/bmp.png");
+}
+
+.icon_gif{
+	background-image:url("../images/fileicon/gif.png");
+}
+
+.icon_jpg{
+	background-image:url("../images/fileicon/jpg.png");
+}
+
+.icon_txt{
+	background-image:url("../images/fileicon/txt.png");
+}
+
+.icon_zip,.icon_7z{
+	background-image:url("../images/fileicon/zip.png");
+}
+
+.icon_rar{
+	background-image:url("../images/fileicon/rar.png");
+}
+
+.icon_doc,.icon_docx{
+	background-image:url("../images/fileicon/doc.png");
+}
+
+.icon_xls,.icon_xlsx{
+	background-image:url("../images/fileicon/xls.png");
+}
+
+.icon_ppt,.icon_pptx{
+	background-image:url("../images/fileicon/ppt.png");
+}
+
+.icon_mp3,.icon_wav,.icon_mid,.icon_wma{
+	background-image:url("../images/fileicon/mp3.png");
+}
+
+.icon_exe,.icon_dll{
+	background-image:url("../images/fileicon/exe.png");
+}
+
+.icon_pdf{
+	background-image:url("../images/fileicon/pdf.png");
+}
+
+.icon_unknown{
+	background-image:url("../images/fileicon/unknown.png");
+}

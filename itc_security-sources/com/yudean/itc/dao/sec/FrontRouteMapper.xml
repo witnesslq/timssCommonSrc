@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yudean.itc.dao.sec.FrontRouteMapper">
+    <select id="selectAllRoute" resultType="FrontRoute">
+        select * from sec_front_route sfr
+        where sfr.siteId = '*' or sfr.siteId like '% ${site} %'
+    </select>
+
+    <select id="selectFavRoute" resultType="FavRoute" parameterType="Map">
+         select t1.routeId as routeId, t1.siteId as siteId,
+                 t2.requireprivilege as requirePrivilege, t2.title as title,
+                 t2.urlHash as urlHash,
+                 t2.iconCls as iconCls
+         from sec_fav_route t1 left join sec_front_route t2
+         on t1.routeId = t2.routeId
+         where userId=#{userId} and t1.siteId = #{site}
+    </select>
+
+    <select id="selectIsRouteExist" resultType="Integer" parameterType="Map">
+        select 1 from sec_fav_route where userId=#{userId} and routeId=#{routeId} and siteId=#{siteId}
+    </select>
+
+    <delete id="deleteFavRoute" parameterType="Map">
+        delete from sec_fav_route where userId=#{userId} and routeid in
+        <foreach collection="ids" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <insert id="insertFavRoute" parameterType="map" databaseId="mysql">
+        insert into sec_fav_route(userId, routeId, siteId) values
+        <foreach collection="ids" item="item" separator=",">
+            (#{userId}, #{item}, #{siteId})
+        </foreach>
+    </insert>
+
+    <!--注意里面这个select dual不能删！这就是语法-->
+    <insert id="insertFavRoute" parameterType="map" databaseId="oracle">
+        INSERT ALL
+        <foreach collection="ids" item="item">
+            into sec_fav_route(userId, routeId, siteId) values (#{userId}, #{item}, #{siteId})
+        </foreach>
+        SELECT * FROM dual
+    </insert>
+</mapper>

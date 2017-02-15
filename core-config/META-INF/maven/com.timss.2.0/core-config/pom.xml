@@ -1,0 +1,78 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.timss.2.0</groupId>
+		<artifactId>timss-deps</artifactId>
+		<version>2.0-SNAPSHOT</version>
+		<relativePath>../timss-deps/pom.xml</relativePath>
+	</parent>
+	<artifactId>core-config</artifactId>
+	<version>2.1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<name>core-config</name>
+	<description>timss配置包。</description>
+	<profiles>
+		<profile>
+            <id>default</id>
+            <activation>
+            	<activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+		      <plugins>
+		         <plugin>
+		            <groupId>org.apache.maven.plugins</groupId>
+		            <artifactId>maven-antrun-plugin</artifactId>
+		            <version>1.7</version>
+		            <executions>
+		               <execution>
+		                  <phase>compile</phase>
+		                  <goals>
+		                     <goal>run</goal>
+		                  </goals>
+		                  <configuration>
+		                  	  <tasks>
+			                     <echo>删除已存在文件</echo>
+			                     <delete file="src/main/resources/springex/web/framework-web.xml" />
+			                     <echo>拷贝定时任务执行文件</echo>
+			                     <copy file="src/main/resources/springex/web/default/framework-web.xml" 
+			                     	tofile="src/main/resources/springex/web/framework-web.xml" encoding="UTF-8"/>
+			                  </tasks>
+		                  </configuration>
+		               </execution>
+		            </executions>
+		         </plugin>
+		      </plugins>
+			</build>
+        </profile>
+        <profile>
+            <id>schedule</id>
+            <build>
+		      <plugins>
+		         <plugin>
+		            <groupId>org.apache.maven.plugins</groupId>
+		            <artifactId>maven-antrun-plugin</artifactId>
+		            <version>1.7</version>
+		            <executions>
+		               <execution>
+		                  <phase>compile</phase>
+		                  <goals>
+		                     <goal>run</goal>
+		                  </goals>
+		                  <configuration>
+			                  <tasks>
+			                     <echo>删除已存在文件</echo>
+			                     <delete file="src/main/resources/springex/web/framework-web.xml" />
+			                     <echo>拷贝定时任务执行文件</echo>
+			                     <copy file="src/main/resources/springex/web/schedule/framework-web.xml" 
+			                     	tofile="src/main/resources/springex/web/framework-web.xml" encoding="UTF-8"/>
+			                  </tasks>
+		                  </configuration>
+		               </execution>
+		            </executions>
+		         </plugin>
+		      </plugins>
+			</build>
+        </profile>
+    </profiles>
+</project>

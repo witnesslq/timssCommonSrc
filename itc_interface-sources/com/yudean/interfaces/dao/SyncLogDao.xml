@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+    <!DOCTYPE mapper 
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yudean.interfaces.dao.SyncLogDao">
+	<insert id="addLog" parameterType="SyncLogBean">
+		INSERT INTO SEC_SYNC_LOG
+		NOLOGGING (SYNC_INFO,DATABEF_,DATAAFT_,CREATETIME,SITEID,TYPE)
+		VALUES(#{syncInfo, jdbcType=VARCHAR},#{databef,
+		jdbcType=VARCHAR},#{dataaft, jdbcType=VARCHAR},#{createtime,
+		jdbcType=TIMESTAMP},#{siteid, jdbcType=VARCHAR},#{type,
+		jdbcType=VARCHAR})
+	</insert>
+</mapper> 

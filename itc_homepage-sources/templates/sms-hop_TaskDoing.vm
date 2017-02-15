@@ -1,0 +1,6 @@
+尊敬的用户：
+您有新的待办到达，请及时处理。
+名称：${task_type}-${task_name}
+申请人：${task_createusername}/${task_createdeptname}
+本邮件由TIMSS系统自动发出，请勿回复。
+如不想再接收来自TIMSS的通知邮件，请登录后在“设置>个性化”中关闭短信通知功能。

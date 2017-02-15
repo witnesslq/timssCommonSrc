@@ -1,0 +1,8 @@
+.list-page .datagrid-row{
+	height:45px;
+}
+
+.list-page .datagrid-body .datagrid-cell{
+	font-size:16px;
+	line-height: 20px;
+}

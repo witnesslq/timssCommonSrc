@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+	<!-- Timss全局配置参数 -->
+	<bean id="TimssRunEnvData"
+		class="com.timss.framework.bean.environment.impl.TimssRuntimeEnvironmentDataImpl"
+		scope="singleton">
+		<property name="version" value="Beta0.0.0.1" />
+		<property name="branchFlag" value="1" />
+		<property name="packageWildcard" value="-" /><!-- 包路径通配符 -->
+		<property name="subPathwildcard" value="~" /><!-- 子路径通配符 -->
+		<property name="controllerPackageRoot" value="com.timss.-.controller." /><!-- 
+			controller包引用路径 -->
+		<property name="servicePackageRoot" value="com.timss.-.service." /><!-- 
+			service包引用路径 -->
+		<property name="serviceCorePackageRoot" value="com.timss.-.service.core." /><!-- 
+			service core包引用路径 -->
+		<property name="serviceLocationPackageRoot" value="com.timss.-.service.~" /><!-- 
+			service location包引用路径 -->
+		<property name="webRoot" value="/page/" /><!-- view 的根目录 -->
+		<property name="viewRoot" value="/-/core/" /><!-- view 的根目录 -->
+		<property name="viewLocation" value="/-/~" /><!-- view 分支版本目录 -->
+		<property name="sessionUserInfoName" value="user" /><!-- view 
+			的根目录 -->
+		<property name="contextInitPath" value="" /><!-- 配置文件Context的加载位置，= 
+			web.xml的配置位置 -->
+		<property name="exceptionConfigPath" value="config/exception/exception.xml" /><!-- 
+			容错框架配置文件位置 -->
+		<property name="ajaxFlagName" value="flag" /><!-- 返回前端标志位 -->
+		<property name="ajaxDataName" value="msg" /><!-- 返回前端标识符 -->
+		<property name="ajaxSucFlag" value="1" /><!-- 日志配置文件地址 -->
+
+		<property name="pageFlagRows" value="rows" /><!-- 分页标志：当前行数 -->
+		<property name="pageFlagPage" value="page" /><!-- 分页标志：当前页数 -->
+		<property name="ajaxJsonDataflag" value="Ajax_Json_Data" /><!-- 
+			分页标志：当前页数 -->
+
+		<property name="requestExceptionData" value="Exception_Data" /><!-- 
+			分页标志：当前页数 -->
+	</bean>
+
+	<bean id="TimssBasedAccessInterceptorConfigData"
+		class="com.timss.framework.bean.handler.TimssBasedAccessInterceptorConfigData">
+		<property name="sufix" value=".jsp,.html" />
+		<property name="bindPrefix"
+			value="org.springframework.validation.BindingResult." />
+		<property name="bindPageClassFlag" value="page" />
+		<property name="bindTotlaPageFlag" value="total" />
+		<property name="bindRowsPageFlag" value="rows" />
+		<property name="noBranchPrefix" value="\\framework" />
+		<property name="javaBeanPrefix" value="get" />
+	</bean>
+	<bean id="applicationContextData"
+		class="com.timss.framework.bean.context.impl.TimssApplicationContextImpl"
+		scope="prototype">
+	</bean>
+	<bean id="ItcAnnotationConfig" class="com.timss.framework.bean.AnnotationConfigBean">
+		<property name="scanAnnotation"
+			value="
+				ItcMessage;
+				ItcMessageBroadcastListener;
+				ItcMessageP2PListener
+			" />
+		<property name="scanPackage"
+			value="
+				com.timss.framework.listener;
+				com.timss.workflow.listener;
+				com.timss.asset.listener;
+				com.timss.purchase.listener;
+				com.timss.inventory.listener;
+				com.timss.workorder.listener;
+				com.timss.ptw.listener;
+				com.timss.pms.listener;
+				com.timss.operation.listener;
+				com.timss.finance.listener;
+				com.timss.homepage.listener;
+				com.timss.demo.listener;
+			" />
+		<property name="initClass" value="
+				com.timss.framework.service.impl.MessageServiceImpl;
+			" />
+	</bean>
+
+	<bean id="AnnotationConfigBean"
+		class="com.timss.framework.bean.context.impl.TimssApplicationContextImpl"
+		scope="prototype">
+	</bean>
+
+	<import resource="../../spring/applicationContext-mybatis.xml" />
+	<import resource="../../spring/applicationContext-datasource.xml" />
+	<import resource="../../spring/applicationContext-notification.xml" />
+	<import resource="../../spring/applicationContext-schedule.xml" />
+</beans>

@@ -1,0 +1,16 @@
+.datagrid-row{
+	height:45px;
+}
+
+.datagrid-cell{
+	font-size:16px;
+}
+
+.input-group-sm > .form-control,
+.input-group-sm > .input-group-addon,
+.pure-label,
+.ctrl-label,
+.itcui_combo_text,
+.input-group-sm > .input-group-btn > .btn {
+  font-size: 16px;
+}

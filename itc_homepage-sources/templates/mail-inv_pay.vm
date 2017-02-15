@@ -1,0 +1,29 @@
+<div>
+	<font face="微软雅黑" size="3">
+		尊敬的用户：
+		<br>
+		<br>
+		以下付款单已审批通过：
+		<br>
+		<br>
+		付款类型：<font color="#EE9A00">${payType}</font>
+		<br>
+		付款单号：<font color="#EE9A00">${payNo}</font>
+		<br>
+		所属合同编号：<font color="#EE9A00">${contractNo}</font>
+		<br>
+		所属合同名称：<font color="#EE9A00">${contractName}</font>
+		<br>
+		<br>
+		请登录timss.gdyd.com办理。
+		<br>
+		<br>
+	</font>
+	<div style="border-top:1px solid #000000">
+		<font face="微软雅黑" size="2">
+			本邮件由TIMSS系统自动发出，请勿回复。
+			<br>
+			如不想再接收来自TIMSS的通知邮件，请登录后在“设置>个性化”中关闭邮件通知功能。
+		</font>
+	</div>
+</div>

@@ -1,0 +1,69 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <url>http://maven.apache.org</url>
+
+    <parent>
+        <groupId>com.timss.2.0</groupId>
+        <artifactId>timss-deps</artifactId>
+        <version>2.0-SNAPSHOT</version>
+        <relativePath>../timss-deps/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>timss-cmdb</artifactId>
+    <version>${timss-cmdb.version}</version>
+    <packaging>jar</packaging>
+    <name>timss-cmdb</name>
+
+    <dependencies>
+       <dependency>
+            <groupId>com.timss.2.0</groupId>
+            <artifactId>timss-facade</artifactId>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <!--1. 开发时候的依赖关系-->
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+
+        <!--2. 打包时候的依赖-->
+        <profile>
+            <id>pkg</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                    </resource>
+                    <resource>
+                        <directory>src/main/webapp</directory>
+                        <targetPath>META-INF/resources</targetPath>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+
+        <!--3. 运行调试时候使用的插件-->
+        <profile>
+            <id>run-tomcat</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.tomcat.maven</groupId>
+                        <artifactId>tomcat7-maven-plugin</artifactId>
+                        <configuration>
+                            <path>/</path>
+                            <port>8090</port>
+                            <uriEncoding>UTF-8</uriEncoding>
+                            <url>http://localhost:8080/mymanager</url>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

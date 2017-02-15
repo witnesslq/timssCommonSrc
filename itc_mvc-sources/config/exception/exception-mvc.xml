@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 系统容错框架配置文件 -->
+<!-- class 为异常类，当业务层或控制层跑出class定义的异常后，view层会返回所定义的数据 default表示未定义的异常采用的通用处理。 
+	所有的jar包都已在config/exception/exception.xml文件中定义自己的异常控制 -->
+<exceptions>
+	<exception name="RuntimeListDataNotFoundException" class="com.yudean.mvc.exception.RuntimeListDataNotFoundException">
+		<page>/page/mvc/exception/runtimeListDataNotFoundException.jsp</page>
+		<data>
+			<flag>200</flag>
+			<msg>返回数据为空</msg>
+		</data>
+	</exception>
+	<exception name="RuntimeEnumNoFoundException" class="com.yudean.mvc.exception.RuntimeEnumNoFoundException">
+		<page>/mvc/exception/pageNoExistsException.jsp</page>
+		<data>
+			<flag>200</flag>
+			<msg>枚举数据为空</msg>
+		</data>
+	</exception>
+	<exception name="SessionOverdueException" class="com.yudean.mvc.exception.SessionOverdueException">
+		<page>/mvc/exception/SessionOverdueException.jsp</page>
+		<data>
+			<flag>520</flag>
+			<msg>用户权限过期</msg>
+		</data>
+	</exception>
+	<exception name="ioException" class="java.io.IOException">
+		<page>/mvc/exception/ioException.jsp</page>
+		<data>
+			<flag>500</flag>
+			<msg>系统读写资源失败</msg>
+		</data>
+	</exception>
+	<default>
+		<page>/mvc/exception/runException.jsp</page>
+		<data>
+			<flag>500</flag>
+			<msg>系统运行错误</msg>
+		</data>
+	</default>
+</exceptions>

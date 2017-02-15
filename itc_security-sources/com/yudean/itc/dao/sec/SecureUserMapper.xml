@@ -1,0 +1,650 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yudean.itc.dao.sec.SecureUserMapper">
+	
+	<sql id="SELECT_SECUREUSER">
+			SELECT SU.USER_ID AS ID, SU.NAME, SU.JOB, SU.TITLE,
+			       SU.EMAIL, SU.MOBILE, SU.OFFICE_TEL AS OFFICETEL, SU.MICRO_TEL AS MICROTEL,
+				   SU.SORT_NUM AS SORTNUM, SU.ACTIVE AS ActiveCode,
+				   SU.SYNC_IND AS SyncIndCode,
+				   SU.SUPER_ADMIN_IND as superAdminIndCode,
+				   SU.ATTRIBUTE2 as arrivalDate,
+				   SU.ATTRIBUTE3 as resignDate,
+				   SU.ATTRIBUTE4 as officeAddr
+	</sql>
+	
+	<insert id="insertUser" parameterType="SecureUser">
+		INSERT INTO SEC_USER(USER_ID, NAME, PASSWORD,JOB, TITLE, EMAIL, MOBILE, OFFICE_TEL, MICRO_TEL,SORT_NUM, SORT_SUBNUM, ACTIVE, 
+			SYNC_IND, DEL_IND,ATTRIBUTE2,ATTRIBUTE3,ATTRIBUTE4,UPDATED_BY,UPDATE_TIME)
+		VALUES (#{id}, #{name}, #{password, jdbcType=VARCHAR},#{job,jdbcType=VARCHAR},#{title,jdbcType=VARCHAR},
+			#{email,jdbcType=VARCHAR},#{mobile,jdbcType=VARCHAR},#{officeTel,jdbcType=VARCHAR},#{microTel,jdbcType=VARCHAR},
+			#{sortNum, jdbcType=NUMERIC}, #{sortSubNum, jdbcType=NUMERIC}, 'Y', #{syncInd, jdbcType=VARCHAR}, 'N',#{arrivalDate, jdbcType=VARCHAR},
+			#{resignDate, jdbcType=VARCHAR},#{officeAddr, jdbcType=VARCHAR},#{updatedBy, jdbcType=VARCHAR},#{updateTime, jdbcType=TIMESTAMP})
+	</insert>
+	
+	<delete id="deleteUser" parameterType="string">
+		DELETE FROM SEC_USER WHERE USER_ID=#{value}
+	</delete>
+	
+	<update id="updateUser" parameterType="SecureUser">
+		update SEC_USER 
+		   set NAME=#{name},
+		   	   JOB=#{job, jdbcType=VARCHAR},
+			   TITLE=#{title, jdbcType=VARCHAR},
+			   EMAIL=#{email, jdbcType=VARCHAR},
+			   MOBILE=#{mobile, jdbcType=VARCHAR},
+			   OFFICE_TEL=#{officeTel, jdbcType=VARCHAR},
+			   MICRO_TEL=#{microTel, jdbcType=VARCHAR},
+			   <if test="null != syncInd and '' != syncInd">
+			   		SYNC_IND=#{syncInd,  jdbcType=VARCHAR},
+			   </if>
+			   SORT_NUM=#{sortNum, jdbcType=INTEGER}, 
+			   SORT_SUBNUM=#{sortSubNum, jdbcType=INTEGER},
+			   UPDATED_BY=#{updatedBy, jdbcType=VARCHAR},
+			   UPDATE_TIME=#{updateTime},
+			   ATTRIBUTE2=#{arrivalDate, jdbcType=VARCHAR},
+			   ATTRIBUTE3=#{resignDate, jdbcType=VARCHAR},
+			   ATTRIBUTE4=#{officeAddr, jdbcType=VARCHAR}
+		where USER_ID=#{id}
+	</update>
+	
+	<update id="updateUserDelIndicator" parameterType="map">
+		UPDATE SEC_USER SET DEL_IND=#{status} WHERE USER_ID=#{userId}
+	</update>
+	
+	<update id="updateUserStatus"  parameterType="map">
+		UPDATE SEC_USER SET ACTIVE=#{status} 
+		<if test="status != null and status == 'Y'.toString()">
+				, SIGN_FAILED_COUNT = 0
+		</if>
+		WHERE USER_ID=#{userId}
+	</update>	
+	
+	<!-- 改掉了rownum和nulls last -->
+	<select id="selectUniqueUsersInOrg" resultType="SecureUser" parameterType="map" databaseId="mysql">
+		SELECT TMP.*,SO1.NAME as currOrgName from (	
+		<include refid="SELECT_SECUREUSER"/>		
+		,(SELECT SOU.ORG_CODE FROM SEC_ORGANIZATION_USER SOU WHERE SOU.USER_ID = SU.USER_ID limit 1) as currOrgCode
+		FROM SEC_USER SU
+		WHERE (SU.DEL_IND IS NULL OR SU.DEL_IND != 'Y')
+			AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')
+			<!-- At most 4 levels supported -->
+			<choose>
+			<!-- if org specified -->
+				<when test="params.orgCode != null">
+				AND (EXISTS (
+					SELECT 1 FROM SEC_ORGANIZATION_USER SOU 
+					WHERE 
+					SOU.USER_ID=SU.USER_ID
+					AND 
+					(EXISTS(				
+				    	SELECT 1 FROM SEC_ORGANIZATION SO WHERE SO.ORG_CODE=SOU.ORG_CODE AND SOU.ORG_CODE=#{params.orgCode}
+						 ) OR EXISTS (
+						    SELECT 1 FROM SEC_ORGANIZATION SO WHERE SO.ORG_CODE  =SOU.ORG_CODE AND SO.PARENT_CODE=#{params.orgCode}
+						 ) OR EXISTS (
+						    SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+						    WHERE SO_CHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{params.orgCode}
+						 ) OR EXISTS (
+						    SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+						         INNER JOIN SEC_ORGANIZATION SO_GCHD ON SO_CHD.ORG_CODE=SO_GCHD.PARENT_CODE
+						         WHERE SO_GCHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{params.orgCode}
+						 ) OR EXISTS (
+						 	SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+						         INNER JOIN SEC_ORGANIZATION SO_GCHD ON SO_CHD.ORG_CODE=SO_GCHD.PARENT_CODE
+						         INNER JOIN SEC_ORGANIZATION SO_GPCHD ON SO_GCHD.ORG_CODE = SO_GPCHD.PARENT_CODE
+						         WHERE SO_GPCHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{params.orgCode}
+						 )
+					 ))
+					)
+				</when>
+				<!-- else -->
+				<otherwise>
+				AND EXISTS (SELECT 1 
+						FROM SEC_ORGANIZATION_USER SOU 
+							INNER JOIN (
+								SELECT ORG.ORG_CODE
+								FROM SEC_ORGANIZATION  ORG
+									INNER JOIN  SEC_SITE_ORGANIZATION SSO ON (
+										ORG.ORG_CODE = SSO.ORG_CODE
+										OR ORG.PARENT_CODE = SSO.ORG_CODE
+										OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION PAR_ORG WHERE PAR_ORG.ORG_CODE = ORG.PARENT_CODE AND PAR_ORG.PARENT_CODE=SSO.ORG_CODE)
+										OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION GRAND_FA WHERE GRAND_FA.PARENT_CODE=SSO.ORG_CODE AND GRAND_FA.ORG_CODE IN 
+								    		(SELECT PARENT_CODE FROM SEC_ORGANIZATION FA WHERE FA.ORG_CODE=ORG.PARENT_CODE))
+								    	OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION GRAND_PLUS_FA WHERE GRAND_PLUS_FA.PARENT_CODE=SSO.ORG_CODE AND GRAND_PLUS_FA.ORG_CODE IN 
+								    		(SELECT PARENT_CODE FROM SEC_ORGANIZATION GRAND_FA WHERE GRAND_FA.ORG_CODE IN 
+								    		(SELECT PARENT_CODE FROM SEC_ORGANIZATION FA WHERE FA.ORG_CODE=ORG.PARENT_CODE))	)
+								)
+								<if test="params.site != null">
+								WHERE SSO.SITE_ID=	#{params.site}
+								</if>
+							) SO ON SOU.ORG_CODE = SO.ORG_CODE
+						WHERE SOU.USER_ID= SU.USER_ID
+						)
+				</otherwise>
+			</choose>
+			<if test="params.userStatus == 'Y'.toString()">
+				AND (SU.ACTIVE IS NULL OR SU.ACTIVE!='N' ) 
+			</if>
+			<if test="params.userStatus == 'N'.toString()">
+				AND (SU.ACTIVE = 'N') 
+			</if>			
+			<if test="params.searchBy != null">
+				AND (SU.USER_ID LIKE '%${params.searchBy}%' OR SU.NAME LIKE '%${params.searchBy}%')
+			</if>
+			<if test="params.searchByUserId != null">
+				AND (SU.USER_ID LIKE '%${params.searchByUserId}%')
+			</if>
+			<if test="params.searchByUserName != null">
+				AND (SU.NAME LIKE '%${params.searchByUserName}%')
+			</if>
+			<if test="params.searchByOfficeTel != null">
+				AND (SU.OFFICE_TEL LIKE '%${params.searchByOfficeTel}%')
+			</if>
+		ORDER BY ISNULL(SU.ACTIVE),SU.ACTIVE DESC,ISNULL(SU.SORT_NUM),SU.SORT_NUM DESC, SU.SORT_SUBNUM ASC) TMP
+        LEFT JOIN SEC_ORGANIZATION SO1 on SO1.ORG_CODE = TMP.currOrgCode
+	</select>
+	
+	<select id="selectUniqueUsersInOrg" resultType="SecureUser" parameterType="map" databaseId="oracle">	
+		SELECT TMP.*,SO1.NAME as currOrgName from (	
+		<include refid="SELECT_SECUREUSER"/>		
+		,(SELECT SOU.ORG_CODE FROM SEC_ORGANIZATION_USER SOU WHERE SOU.USER_ID = SU.USER_ID AND ROWNUM=1) as currOrgCode
+		FROM SEC_USER SU
+		WHERE (SU.DEL_IND IS NULL OR SU.DEL_IND != 'Y')
+			AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')
+			<!-- At most 4 levels supported -->
+			<choose>
+			<!-- if org specified -->
+				<when test="params.orgCode != null">
+				AND (EXISTS (
+					SELECT 1 FROM SEC_ORGANIZATION_USER SOU 
+					WHERE 
+					SOU.USER_ID=SU.USER_ID
+					AND 
+					(EXISTS(				
+				    	SELECT 1 FROM SEC_ORGANIZATION SO WHERE SO.ORG_CODE=SOU.ORG_CODE AND SOU.ORG_CODE=#{params.orgCode}
+						 ) OR EXISTS (
+						    SELECT 1 FROM SEC_ORGANIZATION SO WHERE SO.ORG_CODE  =SOU.ORG_CODE AND SO.PARENT_CODE=#{params.orgCode}
+						 ) OR EXISTS (
+						    SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+						    WHERE SO_CHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{params.orgCode}
+						 ) OR EXISTS (
+						    SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+						         INNER JOIN SEC_ORGANIZATION SO_GCHD ON SO_CHD.ORG_CODE=SO_GCHD.PARENT_CODE
+						         WHERE SO_GCHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{params.orgCode}
+						 )OR EXISTS (
+						 	SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+						         INNER JOIN SEC_ORGANIZATION SO_GCHD ON SO_CHD.ORG_CODE=SO_GCHD.PARENT_CODE
+						         INNER JOIN SEC_ORGANIZATION SO_GPCHD ON SO_GCHD.ORG_CODE = SO_GPCHD.PARENT_CODE
+						         WHERE SO_GPCHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{params.orgCode}
+						 )
+					 ))
+					)
+				</when>
+				<!-- else -->
+				<otherwise>
+				AND EXISTS (SELECT 1 
+						FROM SEC_ORGANIZATION_USER SOU 
+							INNER JOIN (
+								SELECT ORG.ORG_CODE
+								FROM SEC_ORGANIZATION  ORG
+									INNER JOIN  SEC_SITE_ORGANIZATION SSO ON (
+										ORG.ORG_CODE = SSO.ORG_CODE
+										OR ORG.PARENT_CODE = SSO.ORG_CODE
+										OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION PAR_ORG WHERE PAR_ORG.ORG_CODE = ORG.PARENT_CODE AND PAR_ORG.PARENT_CODE=SSO.ORG_CODE)
+										OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION GRAND_FA WHERE GRAND_FA.PARENT_CODE=SSO.ORG_CODE AND GRAND_FA.ORG_CODE IN 
+								    		(SELECT PARENT_CODE FROM SEC_ORGANIZATION FA WHERE FA.ORG_CODE=ORG.PARENT_CODE))
+								    	OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION GRAND_PLUS_FA WHERE GRAND_PLUS_FA.PARENT_CODE=SSO.ORG_CODE AND GRAND_PLUS_FA.ORG_CODE IN 
+								    		(SELECT PARENT_CODE FROM SEC_ORGANIZATION GRAND_FA WHERE GRAND_FA.ORG_CODE IN 
+								    		(SELECT PARENT_CODE FROM SEC_ORGANIZATION FA WHERE FA.ORG_CODE=ORG.PARENT_CODE))	)
+								)
+								<if test="params.site != null">
+								WHERE SSO.SITE_ID=	#{params.site}
+								</if>
+							) SO ON SOU.ORG_CODE = SO.ORG_CODE
+						WHERE SOU.USER_ID= SU.USER_ID
+						)
+				</otherwise>
+			</choose>
+			<if test="params.userStatus == 'Y'.toString()">
+				AND (SU.ACTIVE IS NULL OR SU.ACTIVE!='N' ) 
+			</if>
+			<if test="params.userStatus == 'N'.toString()">
+				AND (SU.ACTIVE = 'N') 
+			</if>			
+			<if test="params.searchBy != null">
+				AND (SU.USER_ID LIKE '%${params.searchBy}%' OR SU.NAME LIKE '%${params.searchBy}%')
+			</if>
+			<if test="params.searchByUserId != null">
+				AND (SU.USER_ID LIKE '%${params.searchByUserId}%')
+			</if>
+			<if test="params.searchByUserName != null">
+				AND (SU.NAME LIKE '%${params.searchByUserName}%')
+			</if>
+			<if test="params.searchByOfficeTel != null">
+				AND (SU.OFFICE_TEL LIKE '%${params.searchByOfficeTel}%')
+			</if>
+		ORDER BY SU.ACTIVE DESC nulls last,SU.SORT_NUM DESC nulls last, SU.SORT_SUBNUM ASC) TMP
+        LEFT JOIN SEC_ORGANIZATION SO1 on SO1.ORG_CODE = TMP.currOrgCode
+	</select>
+	
+	<select id="selectUserSecurityProfile" resultType="SecureUser" parameterType="string">
+		<include refid="SELECT_SECUREUSER"/>
+			, PASSWORD, LAST_SIGN_TIME as lastAttemptLoginTime, NVL(SIGN_FAILED_COUNT,0) as loginFailedCount
+		FROM SEC_USER SU
+		WHERE (DEL_IND IS NULL OR DEL_IND != 'Y')
+			AND USER_ID=#{value}
+	</select>
+	
+	<select id="selectUser" resultType="SecureUser" parameterType="string">
+	
+		<include refid="SELECT_SECUREUSER"/>
+		
+		FROM SEC_USER SU
+		WHERE  USER_ID=#{value}
+	</select>
+	
+	<select id="selectUsersInGivenGroup" resultType="SecureUser" parameterType="string" databaseId="oracle">
+		<include refid="SELECT_SECUREUSER"/>
+		FROM SEC_USER SU INNER JOIN SEC_GROUP_USER SGU ON SU.USER_ID = SGU.USER_ID
+		WHERE (SU.DEL_IND IS NULL OR SU.DEL_IND != 'Y')
+			AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')
+			AND SGU.GROUP_ID=#{value}
+		ORDER BY SU.ACTIVE DESC nulls last,SU.SORT_NUM DESC nulls last, SU.SORT_SUBNUM ASC	
+	</select>
+	
+	<select id="selectUsersInGivenGroup" resultType="SecureUser" parameterType="string" databaseId="mysql">
+		<include refid="SELECT_SECUREUSER"/>
+		FROM SEC_USER SU INNER JOIN SEC_GROUP_USER SGU ON SU.USER_ID = SGU.USER_ID
+		WHERE (SU.DEL_IND IS NULL OR SU.DEL_IND != 'Y')
+			AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')
+			AND SGU.GROUP_ID=#{value}
+		ORDER BY ISNULL(SU.ACTIVE),SU.ACTIVE DESC,ISNULL(SU.SORT_NUM),SU.SORT_NUM DESC, SU.SORT_SUBNUM ASC	
+	</select>
+	
+	<select id="selectUsersOfGivenRole"  resultType="SecureUser" parameterType="map" databaseId="oracle">
+		<include refid="SELECT_SECUREUSER"/>
+			, hasInheritedRoleCode
+		FROM (
+				SELECT SU.* , 'N' AS hasInheritedRoleCode
+				FROM SEC_USER SU INNER JOIN SEC_USER_ROLE SUR ON SU.USER_ID = SUR.USER_ID
+				WHERE (DEL_IND IS NULL OR DEL_IND != 'Y')
+					AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')					
+					AND SUR.ROLE_ID=#{roleId}
+				UNION 
+				SELECT SU.*	, 'Y' AS hasInheritedRoleCode
+				FROM SEC_USER SU INNER JOIN SEC_GROUP_USER SGU ON SGU.USER_ID = SU.USER_ID
+				INNER JOIN SEC_GROUP_ROLE SGR ON SGR.GROUP_ID = SGU.GROUP_ID
+				WHERE (DEL_IND IS NULL OR DEL_IND != 'Y')
+					AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')
+					AND SGR.ROLE_ID=#{roleId}
+			) SU 
+		WHERE 1=1
+		<if test="siteId != null">
+			AND EXISTS (SELECT 1 
+						FROM SEC_ORGANIZATION_USER SOU 
+							INNER JOIN (
+								SELECT ORG.ORG_CODE
+								FROM SEC_ORGANIZATION  ORG
+									INNER JOIN  SEC_SITE_ORGANIZATION SSO ON (
+										ORG.ORG_CODE = SSO.ORG_CODE
+										OR ORG.PARENT_CODE = SSO.ORG_CODE
+										OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION PAR_ORG WHERE PAR_ORG.ORG_CODE = ORG.PARENT_CODE AND PAR_ORG.PARENT_CODE=SSO.ORG_CODE)
+										OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION GRAND_FA WHERE GRAND_FA.PARENT_CODE=SSO.ORG_CODE AND GRAND_FA.ORG_CODE IN 
+								    		(SELECT PARENT_CODE FROM SEC_ORGANIZATION FA WHERE FA.ORG_CODE=ORG.PARENT_CODE))
+								    	OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION GRAND_PLUS_FA WHERE GRAND_PLUS_FA.PARENT_CODE=SSO.ORG_CODE AND GRAND_PLUS_FA.ORG_CODE IN 
+								    		(SELECT PARENT_CODE FROM SEC_ORGANIZATION GRAND_FA WHERE GRAND_FA.ORG_CODE IN 
+								    		(SELECT PARENT_CODE FROM SEC_ORGANIZATION FA WHERE FA.ORG_CODE=ORG.PARENT_CODE))	)	
+								)
+								WHERE SSO.SITE_ID=	#{siteId}
+							) SO ON SOU.ORG_CODE = SO.ORG_CODE
+						WHERE SOU.USER_ID= SU.USER_ID
+						)
+		</if>
+		ORDER BY SU.ACTIVE DESC nulls last,SU.SORT_NUM DESC nulls last, SU.SORT_SUBNUM ASC			
+	</select>
+	
+	<select id="selectUsersInAllSites" resultType="SecureUser" parameterType="map">
+		SELECT TMP.*,SO1.NAME as currOrgName,SS.SITE_NAME as currSiteName from (	
+		<include refid="SELECT_SECUREUSER"/>		
+		,(SELECT SOU.ORG_CODE FROM SEC_ORGANIZATION_USER SOU WHERE SOU.USER_ID = SU.USER_ID AND ROWNUM=1) as currOrgCode
+		,(select sr.site_id from sec_user_role sur left join sec_role sr on sur.role_id=sr.role_id where sur.user_id=su.user_id and rownum=1) as currentSite 
+		FROM SEC_USER SU
+		WHERE (SU.DEL_IND IS NULL OR SU.DEL_IND != 'Y')
+			AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')			
+			<if test="params.userStatus == 'Y'.toString()">
+				AND (SU.ACTIVE IS NULL OR SU.ACTIVE!='N' ) 
+			</if>
+			<if test="params.userStatus == 'N'.toString()">
+				AND (SU.ACTIVE = 'N') 
+			</if>			
+			<if test="params.searchBy != null">
+				AND (SU.USER_ID LIKE '%${params.searchBy}%' OR SU.NAME LIKE '%${params.searchBy}%')
+			</if>
+			<if test="params.searchByUserId != null">
+				AND (SU.USER_ID LIKE '%${params.searchByUserId}%')
+			</if>
+			<if test="params.searchByUserName != null">
+				AND (SU.NAME LIKE '%${params.searchByUserName}%')
+			</if>
+			<if test="params.searchByOfficeTel != null">
+				AND (SU.OFFICE_TEL LIKE '%${params.searchByOfficeTel}%')
+			</if>
+			AND ROWNUM &lt; ${params.pageSize}
+		ORDER BY SU.ACTIVE DESC nulls last,SU.SORT_NUM DESC nulls last, SU.SORT_SUBNUM ASC) TMP
+		LEFT JOIN SEC_ORGANIZATION SO1 on SO1.ORG_CODE = TMP.currOrgCode
+		LEFT JOIN SEC_SITE SS ON SS.SITE_ID = TMP.currentSite
+	</select>
+		
+		
+	<select id="selectUsersByRole" resultType="SecureUser" parameterType="map">
+		SELECT TMP.*,SO1.NAME as currOrgName,SS.SITE_NAME as currSiteName from (	
+		<include refid="SELECT_SECUREUSER"/>		
+		,(SELECT SOU.ORG_CODE FROM SEC_ORGANIZATION_USER SOU WHERE SOU.USER_ID = SU.USER_ID AND ROWNUM=1) as currOrgCode
+		,(select sr.site_id from sec_user_role sur left join sec_role sr on sur.role_id=sr.role_id where sur.user_id=su.user_id and rownum=1) as currentSite 
+		FROM SEC_USER SU , SEC_USER_ROLE SSS
+		WHERE (SU.DEL_IND IS NULL OR SU.DEL_IND != 'Y')
+			AND SSS.ROLE_ID = '${params.roleId}'
+           	AND SU.USER_ID = SSS.USER_ID
+			AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')			
+			<if test="params.userStatus == 'Y'.toString()">
+				AND (SU.ACTIVE IS NULL OR SU.ACTIVE!='N' ) 
+			</if>
+			<if test="params.userStatus == 'N'.toString()">
+				AND (SU.ACTIVE = 'N') 
+			</if>			
+			<if test="params.searchByUserName != null">
+				AND (SU.NAME LIKE '%${params.searchByUserName}%')
+			</if>
+			AND ROWNUM &lt; ${params.pageSize}
+		ORDER BY SU.ACTIVE DESC nulls last,SU.SORT_NUM DESC nulls last, SU.SORT_SUBNUM ASC) TMP
+		LEFT JOIN SEC_ORGANIZATION SO1 on SO1.ORG_CODE = TMP.currOrgCode
+		LEFT JOIN SEC_SITE SS ON SS.SITE_ID = TMP.currentSite
+	</select>
+	
+	
+	<select id="selectUsersOfGivenRole"  resultType="SecureUser" parameterType="map" databaseId="mysql">
+		<include refid="SELECT_SECUREUSER"/>
+			, hasInheritedRoleCode
+		FROM (
+				SELECT SU.* , 'N' AS hasInheritedRoleCode
+				FROM SEC_USER SU INNER JOIN SEC_USER_ROLE SUR ON SU.USER_ID = SUR.USER_ID
+				WHERE (DEL_IND IS NULL OR DEL_IND != 'Y')
+					AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')					
+					AND SUR.ROLE_ID=#{roleId}
+				UNION 
+				SELECT SU.*	, 'Y' AS hasInheritedRoleCode
+				FROM SEC_USER SU INNER JOIN SEC_GROUP_USER SGU ON SGU.USER_ID = SU.USER_ID
+				INNER JOIN SEC_GROUP_ROLE SGR ON SGR.GROUP_ID = SGU.GROUP_ID
+				WHERE (DEL_IND IS NULL OR DEL_IND != 'Y')
+					AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')
+					AND SGR.ROLE_ID=#{roleId}
+			) SU 
+		WHERE 1=1
+		<if test="siteId != null">
+			AND EXISTS (SELECT 1 
+						FROM SEC_ORGANIZATION_USER SOU 
+							INNER JOIN (
+								SELECT ORG.ORG_CODE
+								FROM SEC_ORGANIZATION  ORG
+									INNER JOIN  SEC_SITE_ORGANIZATION SSO ON (
+										ORG.ORG_CODE = SSO.ORG_CODE
+										OR ORG.PARENT_CODE = SSO.ORG_CODE
+										OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION PAR_ORG WHERE PAR_ORG.ORG_CODE = ORG.PARENT_CODE AND PAR_ORG.PARENT_CODE=SSO.ORG_CODE)
+										OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION GRAND_FA WHERE GRAND_FA.PARENT_CODE=SSO.ORG_CODE AND GRAND_FA.ORG_CODE IN 
+								    		(SELECT PARENT_CODE FROM SEC_ORGANIZATION FA WHERE FA.ORG_CODE=ORG.PARENT_CODE))
+								    	OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION GRAND_PLUS_FA WHERE GRAND_PLUS_FA.PARENT_CODE=SSO.ORG_CODE AND GRAND_PLUS_FA.ORG_CODE IN 
+								    		(SELECT PARENT_CODE FROM SEC_ORGANIZATION GRAND_FA WHERE GRAND_FA.ORG_CODE IN 
+								    		(SELECT PARENT_CODE FROM SEC_ORGANIZATION FA WHERE FA.ORG_CODE=ORG.PARENT_CODE))	)	
+								)
+								WHERE SSO.SITE_ID=	#{siteId}
+							) SO ON SOU.ORG_CODE = SO.ORG_CODE
+						WHERE SOU.USER_ID= SU.USER_ID
+						)
+		</if>
+		
+		ORDER BY SU.ACTIVE DESC,SU.SORT_NUM DESC, SU.SORT_SUBNUM ASC			
+	</select>
+	
+	<select id="selectUsersInGivenOrg" resultType="SecureUser" parameterType="map" databaseId="oracle">
+		<include refid="SELECT_SECUREUSER"/>
+		FROM SEC_USER SU INNER JOIN SEC_ORGANIZATION_USER SOU ON SOU.USER_ID=SU.USER_ID
+		WHERE (SU.DEL_IND IS NULL OR SU.DEL_IND != 'Y')
+			AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')
+			<if test="showAllUsers == false">
+			AND (SU.ACTIVE IS NULL OR SU.ACTIVE!='N' )
+			</if>
+			AND SOU.ORG_CODE=#{orgId}
+			
+		ORDER BY SU.ACTIVE DESC nulls last,SU.SORT_NUM DESC nulls last, SU.SORT_SUBNUM ASC	
+	</select>
+	
+	<select id="selectUsersInGivenOrg" resultType="SecureUser" parameterType="map" databaseId="mysql">
+		<include refid="SELECT_SECUREUSER"/>
+		FROM SEC_USER SU INNER JOIN SEC_ORGANIZATION_USER SOU ON SOU.USER_ID=SU.USER_ID
+		WHERE (SU.DEL_IND IS NULL OR SU.DEL_IND != 'Y')
+			AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')
+			<if test="showAllUsers == false">
+			AND (SU.ACTIVE IS NULL OR SU.ACTIVE!='N' )
+			</if>
+			AND SOU.ORG_CODE=#{orgId}
+			
+		ORDER BY ISNULL(SU.ACTIVE),SU.ACTIVE DESC,ISNULL(SU.SORT_NUM),SU.SORT_NUM DESC, SU.SORT_SUBNUM ASC	
+	</select>
+	
+	<select id="selectAllUsersInGivenOrg" resultType="SecureUser" parameterType="map" databaseId="oracle">
+		<include refid="SELECT_SECUREUSER"/>
+		FROM  SEC_ORGANIZATION_USER SOU 
+			INNER JOIN SEC_USER SU ON SOU.USER_ID=SU.USER_ID
+		WHERE (EXISTS (
+			    SELECT 1 FROM SEC_ORGANIZATION SO WHERE SO.ORG_CODE=SOU.ORG_CODE AND SOU.ORG_CODE=#{orgId}
+			 ) OR EXISTS (
+			    SELECT 1 FROM SEC_ORGANIZATION SO WHERE SO.ORG_CODE  =SOU.ORG_CODE AND SO.PARENT_CODE=#{orgId}
+			 ) OR EXISTS (
+			    SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+			    WHERE SO_CHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{orgId}
+			 ) OR EXISTS (
+			    SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+			         INNER JOIN SEC_ORGANIZATION SO_GCHD ON SO_CHD.ORG_CODE=SO_GCHD.PARENT_CODE
+			         WHERE SO_GCHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{orgId}
+			  ) OR EXISTS (
+						 	SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+						         INNER JOIN SEC_ORGANIZATION SO_GCHD ON SO_CHD.ORG_CODE=SO_GCHD.PARENT_CODE
+						         INNER JOIN SEC_ORGANIZATION SO_GPCHD ON SO_GCHD.ORG_CODE = SO_GPCHD.PARENT_CODE
+						         WHERE SO_GPCHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{value}
+						 )
+			)AND (SU.DEL_IND IS NULL OR SU.DEL_IND != 'Y')
+			AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')
+			AND (SU.ACTIVE IS NULL OR SU.ACTIVE!='N' )
+		ORDER BY SU.ACTIVE DESC nulls last,SU.SORT_NUM DESC nulls last, SU.SORT_SUBNUM ASC	
+	</select>
+	
+	<select id="selectAllUsersInGivenOrg" resultType="SecureUser" parameterType="map" databaseId="mysql">
+		<include refid="SELECT_SECUREUSER"/>
+		FROM  SEC_ORGANIZATION_USER SOU 
+			INNER JOIN SEC_USER SU ON SOU.USER_ID=SU.USER_ID
+		WHERE (EXISTS (
+			    SELECT 1 FROM SEC_ORGANIZATION SO WHERE SO.ORG_CODE=SOU.ORG_CODE AND SOU.ORG_CODE=#{orgId}
+			 ) OR EXISTS (
+			    SELECT 1 FROM SEC_ORGANIZATION SO WHERE SO.ORG_CODE  =SOU.ORG_CODE AND SO.PARENT_CODE=#{orgId}
+			 ) OR EXISTS (
+			    SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+			    WHERE SO_CHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{orgId}
+			 ) OR EXISTS (
+			    SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+			         INNER JOIN SEC_ORGANIZATION SO_GCHD ON SO_CHD.ORG_CODE=SO_GCHD.PARENT_CODE
+			         WHERE SO_GCHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{orgId}
+ 			) OR EXISTS (
+						 	SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+						         INNER JOIN SEC_ORGANIZATION SO_GCHD ON SO_CHD.ORG_CODE=SO_GCHD.PARENT_CODE
+						         INNER JOIN SEC_ORGANIZATION SO_GPCHD ON SO_GCHD.ORG_CODE = SO_GPCHD.PARENT_CODE
+						         WHERE SO_GPCHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{value}
+						 )
+			)AND (SU.DEL_IND IS NULL OR SU.DEL_IND != 'Y')
+			AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')
+			AND (SU.ACTIVE IS NULL OR SU.ACTIVE!='N' )
+		ORDER BY ISNULL(SU.ACTIVE),SU.ACTIVE DESC,ISNULL(SU.SORT_NUM),SU.SORT_NUM DESC, SU.SORT_SUBNUM ASC	
+	</select>
+	
+	<update id="updateUserPassword" parameterType="map">
+		update SEC_USER set PASSWORD=#{password},UPDATED_BY=#{updatedBy, jdbcType=VARCHAR},UPDATE_TIME=#{updateTime} where USER_ID=#{id}
+	</update>
+	
+		
+	<select id="selectUserPassword" resultType="string" parameterType="string">
+		select password from sec_user where user_id=#{value}
+	</select>
+	
+	<insert id="insertUserConfig" parameterType="map">
+		insert into sec_userconfig(userid,attr,val) values(#{username},#{attribute},#{v, jdbcType=VARCHAR})
+	</insert>
+	
+	<select id="selectUserConfig" parameterType="map" resultType="string">
+		select val from sec_userconfig where userid=#{username} and attr=#{attribute}
+	</select>
+	
+	<delete id="deleteUserConfig" parameterType="map">
+		delete from sec_userconfig where userid=#{username} and attr=#{attribute}
+	</delete>
+	
+	<select id="selectDelInd" parameterType="string" resultType="map">
+		select user_id,del_ind as DELIND from SEC_USER where user_id=#{userId}
+	</select>
+
+	<select id="selectOrgUser" parameterType="map" resultType="SecureOrgUser">
+		<include refid="SELECT_SECUREUSER"/>,  S.ORG_CODE AS ORGCODE, SU.SYNC_IND AS ORGSYNCIND FROM SEC_ORGANIZATION_USER S, SEC_USER SU WHERE S.USER_ID = SU.USER_ID
+		<if test="null != orgCode and '' != orgCode">
+			AND S.ORG_CODE = #{orgCode}
+		</if>
+		<if test="null != userID and '' != userID">
+			AND S.USER_ID = #{userID}
+		</if>
+	</select>
+	
+	<!-- Reconstructed by YU on 2016/1/27 -->
+	<select id="selectActiveUsersInOrgsWithRoleOrGroup" parameterType="map" resultType="SecureUser">
+		<include refid="SELECT_SECUREUSER"/>
+		<if test="null != roleId and '' != roleId">
+		FROM (
+				SELECT SU.* , 'N' AS hasInheritedRoleCode
+				FROM SEC_USER SU INNER JOIN SEC_USER_ROLE SUR ON SU.USER_ID = SUR.USER_ID
+				WHERE (DEL_IND IS NULL OR DEL_IND != 'Y')
+					AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')					
+					AND SUR.ROLE_ID=#{roleId}
+				UNION 
+				SELECT SU.*	, 'Y' AS hasInheritedRoleCode
+				FROM SEC_USER SU INNER JOIN SEC_GROUP_USER SGU ON SGU.USER_ID = SU.USER_ID
+				INNER JOIN SEC_GROUP_ROLE SGR ON SGR.GROUP_ID = SGU.GROUP_ID
+				WHERE (DEL_IND IS NULL OR DEL_IND != 'Y')
+					AND (SUPER_ADMIN_IND IS NULL OR  SUPER_ADMIN_IND!= 'Y')
+					AND SGR.ROLE_ID=#{roleId}
+			) SU 
+		</if>
+		<if test="null != groupId and '' != groupId">
+		FROM SEC_USER SU INNER JOIN SEC_GROUP_USER SGU ON SU.USER_ID = SGU.USER_ID AND SGU.GROUP_ID=#{groupId}
+		</if>
+		WHERE 1=1
+		<if test="null != orgCode and '' != orgCode">
+		AND (EXISTS (
+					SELECT 1 FROM SEC_ORGANIZATION_USER SOU INNER JOIN SEC_ORGANIZATION ORG ON SOU.ORG_CODE = ORG.ORG_CODE
+					WHERE 
+					SOU.USER_ID=SU.USER_ID
+					AND 
+					( SOU.ORG_CODE=#{orgCode}
+							<if test="null != queryOrgType and queryOrgType == 'U'.toString()">
+							OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION SO WHERE SO.PARENT_CODE = ORG.ORG_CODE AND SO.ORG_CODE = #{orgCode})
+							OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE = SO_CHD.PARENT_CODE
+										WHERE SO.PARENT_CODE = ORG.ORG_CODE AND SO_CHD.ORG_CODE = #{orgCode})
+							OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE = SO_CHD.PARENT_CODE INNER JOIN SEC_ORGANIZATION SO_CHD_CHD ON SO_CHD.ORG_CODE = SO_CHD_CHD.PARENT_CODE
+                                        WHERE SO.PARENT_CODE = ORG.ORG_CODE AND SO_CHD_CHD.ORG_CODE = #{orgCode})     
+							</if>
+							<if test="null != queryOrgType and queryOrgType == 'D'.toString()">
+							OR EXISTS (
+							    SELECT 1 FROM SEC_ORGANIZATION SO WHERE SO.ORG_CODE  =SOU.ORG_CODE AND SO.PARENT_CODE=#{orgCode}
+							 ) OR EXISTS (
+							    SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+							    WHERE SO_CHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{orgCode}
+							 ) OR EXISTS (
+							    SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+							         INNER JOIN SEC_ORGANIZATION SO_GCHD ON SO_CHD.ORG_CODE=SO_GCHD.PARENT_CODE
+							         WHERE SO_GCHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{orgCode}
+							  ) OR EXISTS (
+						 		SELECT 1 FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION SO_CHD ON SO.ORG_CODE=SO_CHD.PARENT_CODE
+						         INNER JOIN SEC_ORGANIZATION SO_GCHD ON SO_CHD.ORG_CODE=SO_GCHD.PARENT_CODE
+						         INNER JOIN SEC_ORGANIZATION SO_GPCHD ON SO_GCHD.ORG_CODE = SO_GPCHD.PARENT_CODE
+						         WHERE SO_GPCHD.ORG_CODE = SOU.ORG_CODE AND SO.PARENT_CODE=#{orgCode}
+						 		)
+							</if>
+					)
+					)
+				)
+		</if>		
+		AND (SU.DEL_IND IS NULL OR SU.DEL_IND != 'Y')
+		AND (SU.ACTIVE IS NULL OR SU.ACTIVE!='N' ) 
+		AND (SU.SUPER_ADMIN_IND IS NULL OR SU.SUPER_ADMIN_IND!='N' ) 
+		ORDER BY SU.SORT_NUM DESC nulls last, SU.SORT_SUBNUM ASC					
+	</select>	
+	
+	<!--2016-3-10 modify by yuanzh 删除用户审计表中一个月之外的数据 -->
+	<delete id="deleteAdtSecUserJustKeepOneMonth">
+		DELETE FROM ADT_SEC_USER A WHERE A.OPT_TIME <![CDATA[<]]> ADD_MONTHS(SYSDATE,-1)
+	</delete>
+	<!-- 2016-6-21 modify by yuanzh 同步数据后将更新一下只有一个站点的用户默认站点信息 -->
+	<update id="updateUserConfigSite">
+		UPDATE SEC_USERCONFIG SU 
+		SET SU.VAL = (
+			SELECT TT.SITE_ID FROM (
+				SELECT UO.USER_ID,SO.SITE_ID 
+				FROM (
+					SELECT SOU.USER_ID,
+					    CASE WHEN instr(SOU.ORG_CODE,'1217511')=0 THEN RPAD(SUBSTR(SOU.ORG_CODE,0,5),7,0) ELSE '1217511' END AS ORG_CODE
+					FROM (
+						SELECT B.USER_ID 
+						FROM (
+							SELECT A.USER_ID,COUNT(1) TT 
+							FROM SEC_ORGANIZATION_USER A 
+							GROUP BY A.USER_ID
+							) B
+						WHERE B.TT=1
+						) C,SEC_ORGANIZATION_USER SOU
+					WHERE C.USER_ID = SOU.USER_ID 
+					) UO,
+					(
+						SELECT RPAD(REPLACE(SSO.ORG_CODE,'*',''),7,0) AS ORG_CODE,SSO.SITE_ID 
+						FROM SEC_SITE_ORGANIZATION SSO
+					) SO
+				WHERE UO.ORG_CODE = SO.ORG_CODE
+			) TT WHERE SU.USERID = TT.USER_ID
+		)
+		WHERE EXISTS (SELECT 1 FROM (
+				SELECT UO.USER_ID,SO.SITE_ID 
+				FROM (
+					SELECT SOU.USER_ID,
+						CASE WHEN instr(SOU.ORG_CODE,'1217511')=0 THEN RPAD(SUBSTR(SOU.ORG_CODE,0,5),7,0) ELSE '1217511' END AS ORG_CODE 
+					FROM (
+						SELECT B.USER_ID 
+						FROM (
+							SELECT A.USER_ID,COUNT(1) TT 
+							FROM SEC_ORGANIZATION_USER A 
+							GROUP BY A.USER_ID
+							) B
+						WHERE B.TT=1
+						) C,SEC_ORGANIZATION_USER SOU
+					WHERE C.USER_ID = SOU.USER_ID 
+					) UO,
+					(
+						SELECT RPAD(REPLACE(SSO.ORG_CODE,'*',''),7,0) AS ORG_CODE,SSO.SITE_ID 
+						FROM SEC_SITE_ORGANIZATION SSO
+					) SO
+				WHERE UO.ORG_CODE = SO.ORG_CODE
+			) TT WHERE SU.USERID = TT.USER_ID
+		) AND SU.ATTR = 'defaultSite'
+	</update>
+	
+	<update id="updateUserSignTime" parameterType="map">
+		UPDATE SEC_USER SET LAST_SIGN_TIME=#{updateTime} WHERE USER_ID = #{userId}
+	</update>
+	<update id="updateSignFailedCount" parameterType="map">
+		UPDATE SEC_USER SET SIGN_FAILED_COUNT = #{numberTobeSet} WHERE USER_ID = #{userId}
+	</update>
+</mapper>

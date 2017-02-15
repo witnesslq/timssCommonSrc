@@ -1,0 +1,47 @@
+.navitem,
+.navitem-hover,
+.navitem-active,
+.navitem-selected,
+.navitem-options-menu-button,
+.itc_navtree_grouptitle:hover, .itc_navtree_nochildren:hover,.itc_navtree_item:hover,
+.itc_navtree_item_selected,
+.navtree-arrow,
+.navitem-close-button,
+.navitem-selected-close-button
+.navitem-close-button-hover{	
+	background: url(img/c614de2a615adc996271b32c25008d92d5884b0c.png) repeat-x 0 0;
+}
+
+.tA0{color:#ECECEC;border:0}
+
+.title_username,
+.head_link>li>a,
+.head_link>li{
+	color:rgb(219,219,224);
+}
+
+.itc_navtree_grouptitle,
+.itc_navtree_item{
+	color: rgb(255, 255, 255);
+	text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 1px;
+}
+
+#mainframe_navtree{
+    border-color:#fff;
+    border-right-style: solid;
+    border-right-width: 1px;
+}
+
+.itcui-navigation-separator {
+    background-color:#000000;
+}
+
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+  background-color: #f0f0f0;
+  color:#555555;
+}
+
+.itcui-navigation-ul{
+	margin-top:3px;
+}

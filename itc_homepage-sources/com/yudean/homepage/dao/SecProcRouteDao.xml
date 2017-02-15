@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+    <!DOCTYPE mapper 
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yudean.homepage.dao.SecProcRouteDao">
+	<select id="selectSecProcRoute" resultType="SecProcRoute"
+		parameterType="SecProcRoute">
+		SELECT FLOWID, USERID, SITEID,DEPTID,VISIBLETYPE
+		FROM SEC_PROC_ROUTE S
+		WHERE 1 = 1
+		<if test="flowid != null">
+			AND S.FLOWID = #{flowid}
+		</if>
+		<if test="userid != null">
+			AND S.USERID = #{userid}
+		</if>
+		<if test="siteid != null">
+			AND S.SITEID = #{siteid}
+		</if>
+		<if test="visibleType != null">
+			AND S.VISIBLETYPE = #{visibleType}
+		</if>
+	</select>
+	<insert id="insertSecProcRoute">
+		INSERT INTO SEC_PROC_ROUTE(FLOWID, USERID,
+		SITEID,DEPTID,VISIBLETYPE)
+		VALUES(#{flowid}, #{userid},
+		#{siteid},#{deptid,jdbcType=VARCHAR},#{visibleType,jdbcType=VARCHAR})
+	</insert>
+	
+	<!-- 使用merge into 减少查询判断是否更新（插入）访问数据库次数操作 -->
+	<insert id="insertSecProcRouteBatch" parameterType="java.util.List">
+		MERGE INTO SEC_PROC_ROUTE H
+		USING 
+		(
+		<foreach collection="list" item="item" index="index" separator="union" >
+		   	SELECT #{item.flowid,jdbcType=VARCHAR} AS FLOWID,
+		   			#{item.userid,jdbcType=VARCHAR} AS USERID,
+		   			#{item.siteid,jdbcType=VARCHAR} AS SITEID,
+		   			#{item.deptid,jdbcType=VARCHAR} AS DEPTID,
+		   			#{item.visibleType,jdbcType=VARCHAR} AS VISIBLETYPE
+			FROM DUAL
+		</foreach>
+		) HT
+		ON (H.FLOWID = HT.FLOWID and H.USERID = HT.USERID and H.SITEID = HT.SITEID and H.VISIBLETYPE = HT.VISIBLETYPE)
+		WHEN NOT MATCHED THEN
+		    INSERT
+			VALUES(HT.FLOWID, HT.USERID,HT.SITEID,HT.VISIBLETYPE,HT.DEPTID)
+		
+	</insert>
+</mapper> 

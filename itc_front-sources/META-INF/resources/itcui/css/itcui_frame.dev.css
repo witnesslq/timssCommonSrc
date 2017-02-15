@@ -1,0 +1,655 @@
+/*packaged at 2015-11-12 18:09:31*/
+/*
+File:D:\itc_uispec\trunk\prototype_ui\nightly\source\itcui\css\itc_navtree.css
+*/
+.itc_navtree_item{
+	font-size: 12px;
+	height: 28px;
+	line-height: 28px;
+	width: 160px;
+	padding-left: 40px;
+	cursor: pointer;
+}
+.itc_navtree_nochildren,.itc_navtree_grouptitle{	
+	font-size: 12px;
+	height: 28px;
+	line-height: 28px;
+	width: 172px;
+	padding-left: 28px;
+	cursor: pointer;
+}
+.navtree-arrow{
+	position: absolute;
+}
+
+.itc_navtree_grouptitle{
+	position: relative;
+}
+
+.itc_navtree_grouptitle>.navtree-arrow{	
+	background-position: -64px -256px;
+	top: 10px;
+	left: 12px;
+	width: 5px;
+	height: 8px;
+}
+
+.itc_navtree_grouptitle_expand>.navtree-arrow{	
+	background-position: -32px -256px;
+	width:8px;
+	height: 5px;
+	top: 11px;
+	left: 12px;
+}
+
+.itc_navtree_subitem .navtree_item{
+	padding-left: 36px!important;
+	width: 164px!important;
+}
+
+.itc_navtree_item_selected,.itc_navtree_nochildren_seleced{
+	background-color: rgb(221,221,221);
+}
+
+.half-hide{
+	display:none;
+}
+
+.half-hide-mask{
+	background-color:#000;
+	filter:Alpha(opacity=80);
+	opacity: 0.8;
+	width: 100%;
+	height:100%;
+	position: absolute;
+	top:0px;
+	left:0px;
+	z-index:23333;
+}
+
+.tree-half-p{
+	padding-left: 20px!important;
+}
+
+.tree-dark{
+	background-color: #CCC!important;
+	cursor: pointer;
+}
+
+.tree-button-div{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 52%;
+	z-index:23;
+	width:12px;
+	cursor: pointer;
+	display: none;
+}
+
+.tree-hide-button,.sidetree-hide-button{
+	background-color: #f6f6f6;
+	width:10px;
+	height: 75px;
+	position: absolute;
+	bottom: 2px;
+	left: 0px;
+	border-right-color: #84a8cd;
+	border-bottom-color: #84a8cd;
+	border-top-color: #84a8cd;
+	border-bottom-width: 1px;
+	border-top-width: 1px;
+	border-right-width: 1px;
+	border-right-style: solid;
+	border-top-style: solid;
+	border-bottom-style: solid;
+	border-radius: 0 3px 3px 0;
+}
+
+.tree-btn-left>.tree-hide-button{
+	background-image:url("../images/nav_arrow_fold.png");
+}
+
+.tree-btn-right>.tree-hide-button{
+	background-image:url("../images/nav_arrow_expand.png");	
+}
+
+.itc_navtree_grouptitle:hover, .itc_navtree_nochildren:hover,.itc_navtree_item:hover {
+    background-color: transparent;
+    background-position: 0 -416px!important;  
+}
+
+.itc_navtree_item_selected{
+    background-color: transparent;
+    background-position: -208px -416px!important;
+}
+
+.itc_navtree_item,.itc_navtree_grouptitle{
+	position: relative;
+}
+
+.sideAppendFrame{
+	width:230px;
+	height:100%;
+	position:absolute;
+	display:block;
+	top:0;
+	left:0;
+}
+.sidetree-hide .sideAppendFrame{
+	width:14px
+}
+
+#sidetree_mask{
+	width:14px;
+	height:100%;
+	position:absolute;
+	display:none;
+	top:0;
+	left:0;
+	z-index: 1;
+	background-color: #fafafa;
+	border-right:1px solid #c6c6c6;
+}
+
+.sidetree-hide #sidetree_mask{
+	display: block;
+}
+
+.sidetree-hide.pleft230{
+	padding-left: 14px;
+}
+
+.pleft230 #btn_sidetree_fold{
+	left: 230px;
+	display: block;
+}
+
+.sidetree-hide.pleft230 #btn_sidetree_fold{
+	left: 14px;
+	display: block;
+}
+
+.sidetree-hide-button{
+	background-image:url("../images/nav_arrow_fold.png");
+}
+
+.sidetree-hide .sidetree-hide-button{
+	background-image:url("../images/nav_arrow_expand.png");
+}
+
+.sidetree-hide #btn_sidetree_fold{
+	display: block!important;
+}
+/*
+File:D:\itc_uispec\trunk\prototype_ui\nightly\source\itcui\css\itc_navigation.css
+*/
+body{
+	padding:0px!important;
+	overflow:hidden;
+}
+
+html{
+	width:100%;
+    height:100%;
+}
+
+.itcui-navigation {
+    position: relative;
+    height: 36px;
+    overflow: hidden;
+}
+/* 导航条容器 */
+.itcui-navigation-ul {
+    position: relative;
+    display: block;
+    margin: 0;
+    padding: 0;
+    margin-left: 12px;
+    margin-top:2px;
+    overflow: hidden;
+    list-style: none;
+    z-index: 2px;
+}
+/* 导航项 */
+.navitem,
+.navitem-hover,
+.navitem-active,
+.navitem-selected,
+.itcui-nav-menu-btn {
+    position: relative;
+    display: block;
+    float: left;
+    height: 32px;
+    padding: 5px 20px 1px 14px;
+    border-style: solid;
+    border-width: 1px 1px 0;
+    font-size: 14px;    
+    text-align: center;
+    outline: 0 normal;
+    cursor: pointer;
+    white-space: nowrap;
+    margin:0;
+    margin-left: -1px;
+}
+
+.navitem-selected{
+    z-index: 5;
+}
+
+
+.navitem-selected {
+    font-weight: bold;
+}
+
+/* 下拉选项按钮 */
+.itcui-nav-menu-btn {
+    border-top-left-radius: 0;
+    font-size: 12px;
+    height: 31px;
+    line-height: 30px;
+    margin-top: 3px;
+    padding: 0;
+    width: 27px;
+}
+
+.itcui-nav-menu-btn b {
+    position: absolute;
+    left: 10px;
+    top: 15px;
+    background: url(../images/arrow_down.png) no-repeat 0 0;
+    height: 4px;
+    width: 7px;
+    overflow: hidden;
+    display:block;
+}
+/* 后置对象容器 */
+.navitem-rear {
+    height: 19px;
+    position: absolute;
+    right: 3px;
+    top: 6px;
+    width: 19px;
+    cursor: pointer;
+    display: none;
+    position: absolute;
+}
+.navitem-close-button {
+    background: none;
+    border-color: transparent;
+}
+/* 选中项的关闭按钮样式 */
+.navitem-close-button-hover {
+    color: #4E5257;
+}
+/* 关闭按钮背景 */
+.navitem-close-button,
+.navitem-selected-close-button
+.navitem-close-button-hover {
+    
+	position: absolute;
+	
+	display: block;
+}
+
+.navitem-close-button,
+.navitem-selected-close-button{
+	width: 7px;
+	height: 7px;
+	left: 6px;
+	top: 6px;
+}
+.navitem-close-button{
+	background-position: 0px -288px!important;
+}
+
+.navitem-selected-close-button{	
+	background-position: -96px -288px!important;
+}
+
+.navitem-hover .navitem-close-button-hover{
+	background-position: -32px -288px!important;
+	height: 13px;
+	left: 3px;
+	top: 3px;
+	width: 13px;
+}
+
+.navitem-selected .navitem-close-button-hover{
+	background-position: -128px -288px!important;
+	height: 13px;
+	left: 3px;
+	top: 3px;
+	width: 13px;
+}
+
+/* 导航分隔线 */
+.itcui-navigation-separator {
+    position: absolute;
+    background-color:rgb(19,91,165);
+    left: 0;
+    bottom: 0px;
+    height: 2px;
+    width: 100%;
+    z-index: 5;
+}
+/* 视图区域 */
+.itcui-navigation-view {
+    position: relative;
+    height: 100%;
+    display: none;
+}
+
+.itcui_close_tab,.itcui_menu_icon{
+    width: 15px;
+    height: 15px;
+    float: left;
+}
+
+.itcui_close_tab{
+    background-image: url("../images/close_tab.png");
+}
+
+.navitem,/*
+.navitem-hover,
+.navitem-active,
+.navitem-selected,*/
+.itcui-nav-menu-btn {
+    background-position: 0 -448px!important;
+}
+
+.navitem-hover {
+    background-position: -208px -448px!important;
+}
+
+.navitem-selected {
+    background-position: -208px -496px!important;
+    background-repeat: repeat-x;
+}
+
+.kA0,.mE0{
+    z-index: 3;
+    width: 1px;
+    display: block;
+    position: absolute;
+}
+
+.kA0{
+    background-position: -192px -288px!important;
+    height: 29px;
+    right: -1px;
+    top: 0px;
+}
+
+
+.mE0{
+    background-position: -193px -288px!important;
+    height: 32px;
+    left: -1px;
+    top: 0px;
+}
+
+.navitem-selected>.kA0{
+	display: none;
+}
+
+.navitem-name{
+	overflow: hidden;
+	width: 80px;
+	display: block;
+	text-overflow: ellipsis;
+}
+
+.radus-left{
+	border-top-left-radius: 3px;
+}
+
+.radus-right{
+	border-top-right-radius: 3px;	
+}
+
+.last-sepline{
+	top:3px;
+}
+/*
+File:D:\itc_uispec\trunk\prototype_ui\nightly\source\bootstrap\css\bs_core.css
+*/
+/*BS相关*/
+.bbox,
+.bbox *,
+.bbox *:before,
+.bbox *:after {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+.cbox *,
+.cbox *:before,
+.cbox *:after{
+  -webkit-box-sizing:  content-box!important;
+  -moz-box-sizing:  content-box!important;
+  box-sizing:  content-box!important;
+}
+
+.pull-right {
+  float: right !important;
+}
+
+.pull-left {
+  float: left !important;
+}
+
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: " ";
+}
+
+.clearfix:after {
+  clear: both;
+}
+
+.hide {
+  display: none !important;
+}
+
+.show {
+  display: block !important;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+.hidden {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.affix {
+  position: fixed;
+}
+
+i{
+  margin-left:-4px;
+  margin-right:8px;
+}
+
+p{
+  text-indent:2em;
+}
+body{
+  font-family: 'Microsoft Yahei',Helvetica,verdana;
+}
+
+ .btn-default > .caret,
+  .dropup > .btn > .caret {
+    border-top-color: #000 !important;
+  }
+
+  .btn-success>.caret{
+    border-top-color: #fff !important; 
+  }
+
+.caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  vertical-align: middle;
+  border-top: 4px solid;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+}
+
+.dropup .caret,
+.navbar-fixed-bottom .dropdown .caret {
+  border-top: 0;
+  border-bottom: 4px solid;
+  content: "";
+}
+
+.btn .caret {
+  margin-left: 0;
+}
+
+.btn-lg .caret {
+  border-width: 5px 5px 0;
+  border-bottom-width: 0;
+}
+
+.dropup .btn-lg .caret {
+  border-width: 0 5px 5px;
+}
+
+.sr-only {
+  visibility: hidden;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -5px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+/*
+File:D:\itc_uispec\trunk\prototype_ui\nightly\source\itcui\css\itcui_skinner.css
+*/
+.skin {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	background-repeat: repeat-x;
+}
+
+.skin-top {
+	top: 0;
+	left: 0;
+	z-index: -2;
+	height: 86px!important;
+	background-repeat: repeat-x!important;
+	overflow: hidden;
+}
+
+.skin-item {
+	position: absolute;
+	z-index: -2;
+	width: 100%;
+	background-repeat: no-repeat;
+	background-position: top left;
+	height: 100%;
+}
+
+.skin-top-right {
+	top: 0;
+	right: 0;
+	z-index: -2;
+	background-position: top right;
+}
+
+.skin-left {
+	top: 86px;
+	left: 0;
+	bottom: 0;
+	z-index: -6;
+	width: 200px;
+	border-style: solid;
+	border-width: 0 1px 0 0;
+	border-color: #fff;
+	background-position: 0 86px;
+	background-repeat: repeat-y;
+	height: auto;
+}
+
+.skin-left-top {
+	top: 86px;
+	left: 0;
+	bottom: 0;
+	z-index: -5;
+	width: 200px;
+	background-position: top left;
+	height: auto;
+}
+
+.skin-left-bottom {
+	bottom: 0;
+	left: 0;
+	z-index: -4;
+	width: 199px;
+	background-position: bottom left;
+}
+
+.skin-right {
+	top: 0;
+	right: 0;
+	bottom: 0;
+	z-index: -6;
+	background-position: top right;
+}
+
+.skin-right-top {
+	top: 86px;
+	right: 0;
+	bottom: 0;
+	z-index: -5;
+	background-position: top right;
+	height: auto;
+}
+
+.skin-right-bottom {
+	bottom: 0;
+	right: 0;
+	z-index: -4;
+	background-position: bottom right;
+}
+
+.skin-bottom {
+	bottom: 0;
+	left: 0;
+	z-index: -10;
+	background-repeat: repeat-x;
+	background-position: center bottom;
+}
+
+.skin-fullScreen {
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	overflow: hidden;
+	z-index: 0!important;
+}
+
+.skin-top-inner2, .skin-top-inner {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	display: none;
+}
+
+.skin-top-inner2 {
+	z-index: -8;
+}

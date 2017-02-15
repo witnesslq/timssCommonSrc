@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yudean.itc.dao.sec.DataFilterMapper">
+
+	<select id="selectFilterByFunction" resultType="DataFilterRule" parameterType="string">
+		SELECT SF.FILTER_ID AS ID, SF.FORMULA, SF.REMARKS
+		FROM SEC_FILTER SF INNER JOIN SEC_FUNC_FILTER SFF ON SF.FILTER_ID=SFF.FILTER_ID
+		WHERE SFF.FUNC_ID=#{value}
+	</select>
+</mapper>

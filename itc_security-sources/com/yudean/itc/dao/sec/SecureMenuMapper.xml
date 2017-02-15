@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yudean.itc.dao.sec.SecureMenuMapper">
+	<sql id="selectSql">
+		SELECT MENU.MENU_ID AS ID,MENU.NAME,MENU.URL,MENU.SORT_NUM as sortNum,MENU.PARENT_MENU as parentMenuId,
+		MENU.REMARKS,MENU.category as MenuTypeCode,MENU.UPDATED_BY as updateBy,MENU.UPDATE_TIME as updateTime
+	</sql>			
+	
+	
+	<select id="selectAuthorizedMenus" parameterType="map" resultType="SecureMenu">
+	<include refid="selectSql"/>
+		, numberOfSubMenu, numberOfSubFunction
+    FROM
+    (
+    	SELECT MENU_.*
+		 from sec_menu MENU_
+	    where (exists 
+	        (   SELECT 1 
+	              FROM SEC_USER SU 
+	                   INNER JOIN SEC_GROUP_USER SGU ON SU.USER_ID = SGU.USER_ID
+	                   INNER JOIN SEC_GROUP_ROLE SGR ON SGU.GROUP_ID = SGR.GROUP_ID
+	                   INNER JOIN SEC_ROLE SR ON SGR.ROLE_ID = SR.ROLE_ID
+	                   INNER JOIN SEC_ROLE_MENU SRM ON SR.ROLE_ID = SRM.ROLE_ID
+	             WHERE   SU.USER_ID=#{userId}
+	             	AND SR.site_id=#{siteId}
+	                 AND  (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+	                 AND SRM.MENU_ID = MENU_.MENU_ID
+	             )
+	       OR EXISTS (
+	            SELECT 1
+	              FROM SEC_USER SU
+	                   INNER JOIN SEC_USER_ROLE SUR ON SU.USER_ID = SUR.USER_ID
+	                   INNER JOIN SEC_ROLE SR ON SUR.ROLE_ID = SR.ROLE_ID
+	                   INNER JOIN SEC_ROLE_MENU SRM ON SR.ROLE_ID = SRM.ROLE_ID
+	             WHERE SU.USER_ID=#{userId}
+	             	AND SR.site_id=#{siteId}
+	                 AND  (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+	                  AND SRM.MENU_ID = MENU_.MENU_ID
+	             ) 
+	        OR EXISTS  (SELECT 1 FROM SEC_USER SU WHERE SU.SUPER_ADMIN_IND='Y' AND SU.USER_ID=#{userId}     )
+	             )
+	             <if test="category != null">
+	  		         and MENU_.CATEGORY=#{category}           
+	             </if>
+
+		       <choose>
+		       		<when test="parentId == null">
+		       			and (MENU_.PARENT_MENU='0' OR MENU_.PARENT_MENU IS NULL)
+		       		</when>
+		       		<otherwise>
+		       			and MENU_.PARENT_MENU=#{parentId}
+		       		</otherwise>
+		       </choose>     
+    )    MENU
+    	LEFT JOIN (
+    		SELECT PARENT_MENU, COUNT(1) AS numberOfSubMenu 
+    		FROM SEC_MENU SUB_MENU
+    		WHERE 
+	    		(exists 
+			        (   SELECT 1 
+			              FROM SEC_USER SU 
+			                   INNER JOIN SEC_GROUP_USER SGU ON SU.USER_ID = SGU.USER_ID
+			                   INNER JOIN SEC_GROUP_ROLE SGR ON SGU.GROUP_ID = SGR.GROUP_ID
+			                   INNER JOIN SEC_ROLE SR ON SGR.ROLE_ID = SR.ROLE_ID
+			                   INNER JOIN SEC_ROLE_MENU SRM ON SR.ROLE_ID = SRM.ROLE_ID
+			             WHERE   SU.USER_ID=#{userId}
+			             	AND SR.site_id=#{siteId}
+			                 AND  (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+			                 AND SRM.MENU_ID = SUB_MENU.MENU_ID
+			             )
+			       OR EXISTS (
+			            SELECT 1
+			              FROM SEC_USER SU
+			                   INNER JOIN SEC_USER_ROLE SUR ON SU.USER_ID = SUR.USER_ID
+			                   INNER JOIN SEC_ROLE SR ON SUR.ROLE_ID = SR.ROLE_ID
+			                   INNER JOIN SEC_ROLE_MENU SRM ON SR.ROLE_ID = SRM.ROLE_ID
+			             WHERE SU.USER_ID=#{userId}
+			             	AND SR.site_id=#{siteId}
+			                 AND  (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+			                  AND SRM.MENU_ID = SUB_MENU.MENU_ID
+			             ) 
+			        OR EXISTS  (SELECT 1 FROM SEC_USER SU WHERE SU.SUPER_ADMIN_IND='Y' AND SU.USER_ID=#{userId}     )
+			             )
+    		GROUP BY PARENT_MENU
+    	) SUB_MENU ON MENU.MENU_ID = SUB_MENU.PARENT_MENU
+    	LEFT JOIN (
+    		SELECT MENU_ID, COUNT(1) AS numberOfSubFunction
+    		FROM SEC_FUNCTION SUB_FUNC
+    		WHERE 
+	    		(exists 
+			        (   SELECT 1 
+			              FROM SEC_USER SU 
+			                   INNER JOIN SEC_GROUP_USER SGU ON SU.USER_ID = SGU.USER_ID
+			                   INNER JOIN SEC_GROUP_ROLE SGR ON SGU.GROUP_ID = SGR.GROUP_ID
+			                   INNER JOIN SEC_ROLE SR ON SGR.ROLE_ID = SR.ROLE_ID
+			                   INNER JOIN SEC_ROLE_FUNCTION SRF ON SR.ROLE_ID = SRF.ROLE_ID
+			                   INNER JOIN SEC_FUNCTION SF ON SF.FUNC_ID=SRF.FUNC_ID
+			             WHERE   SU.USER_ID=#{userId}
+			             	AND SR.site_id=#{siteId}
+			                 AND  (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+			                 AND SF.MENU_ID=SUB_FUNC.MENU_ID
+			             )
+			       OR EXISTS (
+			            SELECT 1
+			              FROM SEC_USER SU
+			                   INNER JOIN SEC_USER_ROLE SUR ON SU.USER_ID = SUR.USER_ID
+			                   INNER JOIN SEC_ROLE SR ON SUR.ROLE_ID = SR.ROLE_ID
+			                   INNER JOIN SEC_ROLE_FUNCTION SRF ON SR.ROLE_ID = SRF.ROLE_ID
+			                   INNER JOIN SEC_FUNCTION SF ON SF.FUNC_ID=SRF.FUNC_ID
+			             WHERE SU.USER_ID=#{userId}
+			             	AND SR.site_id=#{siteId}
+			                 AND  (SR.ACTIVE IS NULL OR SR.ACTIVE = 'Y')
+			                  AND SF.MENU_ID=SUB_FUNC.MENU_ID
+			             ) 
+			        OR EXISTS  (SELECT 1 FROM SEC_USER SU WHERE SU.SUPER_ADMIN_IND='Y' AND SU.USER_ID=#{userId}     )
+			             )	
+    		GROUP BY MENU_ID
+    	) SUB_FUNC ON MENU.MENU_ID = SUB_FUNC.MENU_ID
+   ORDER BY MENU.SORT_NUM
+	</select>
+	
+	<select id="selectSubMenus"  parameterType="map" resultType="SecureMenu">
+		<include refid="selectSql"/>
+			, numberOfSubMenu, numberOfSubFunction
+	    FROM SEC_MENU MENU
+	       LEFT JOIN (  SELECT PARENT_MENU, COUNT(1) AS numberOfSubMenu
+	                      FROM SEC_MENU
+	                  GROUP BY PARENT_MENU) SUB_MENU
+	          ON MENU.MENU_ID = SUB_MENU.PARENT_MENU
+	       LEFT JOIN (  SELECT MENU_ID, COUNT(1) AS numberOfSubFunction
+	                      FROM SEC_FUNCTION
+	                  GROUP BY MENU_ID) SUB_FUNC
+	          ON MENU.MENU_ID = SUB_FUNC.MENU_ID
+		 WHERE   1=1
+  		  <choose>
+	       		<when test="menuId == null">
+	       			and (MENU.PARENT_MENU='0' OR MENU.PARENT_MENU IS NULL)
+	       		</when>
+	       		<otherwise>
+	       			and MENU.PARENT_MENU=#{menuId}
+	       		</otherwise>
+	       				       		
+	       </choose>
+	       <if test="category != null">
+	       		and MENU.CATEGORY=#{category}
+	       </if>
+	       <if test="frameobj !=null">
+	       		and MENU.FRAMEOBJ = #{frameobj}
+	       </if>
+	       <if test="onlyActive == true">
+	       		and MENU.ACTIVE='Y'
+	       </if>
+	       ORDER BY MENU.SORT_NUM
+	</select>
+	
+	<update id="updateMenuStatus" parameterType="map">
+		update sec_menu set active=
+		<if test="status == true">
+			'Y'
+		</if>
+		<if test="status == false">
+			'N'
+		</if>
+		where menu_id in 
+		<foreach collection="ids" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update> 
+	
+	<update id="updateMenuName" parameterType="map">
+		update sec_menu set NAME=#{mnuName} where MENU_ID=#{mnuId}
+	</update>
+</mapper>

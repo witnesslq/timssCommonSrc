@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+	<!-- 定义首页 -->
+	<mvc:view-controller path="/" view-name="redirect:/index.jsp/" />
+
+	<!-- 自动扫描且只扫描@Controller -->
+	<context:component-scan base-package="com.*.*" use-default-filters="false">
+		<context:include-filter type="regex" expression=".web.*" />
+		<context:include-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+		<context:include-filter type="annotation"
+			expression="org.springframework.web.bind.annotation.ControllerAdvice" />
+	</context:component-scan>
+
+	<bean id="ControllerAop" class="com.yudean.mvc.aop.ControllAop"></bean>
+	<aop:config>
+		<aop:aspect ref="ControllerAop">
+			<aop:around method="controllerArround" pointcut="execution(* com.*.*.web.*.*(..)))" />
+		</aop:aspect>
+	</aop:config>
+
+	<mvc:annotation-driven>
+		<mvc:message-converters register-defaults="true">
+			<!-- 将StringHttpMessageConverter的默认编码设为UTF-8 -->
+			<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+				<constructor-arg value="UTF-8" />
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**/*.do" />
+			<bean class="com.yudean.mvc.handler.BasedAccessInterceptor" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+	<!-- <aop:aspectj-autoproxy></aop:aspectj-autoproxy> -->
+	<!-- <aop:aspectj-autoproxy proxy-target-class="true"/> -->
+
+	<!-- 定义JSP文件的位置 -->
+
+
+	<bean id="viewResolver" class="com.yudean.mvc.view.viewResolver.MultiViewResover">
+		<property name="resolvers">
+			<map>
+				<entry key="page">
+					<bean
+						class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+						<property name="prefix" value="/page/" />
+						<property name="suffix" value="" />
+					</bean>
+				</entry>
+			</map>
+		</property>
+	</bean>
+
+<!-- 	<bean -->
+<!-- 		class="org.springframework.web.servlet.view.InternalResourceViewResolver"> -->
+		<!--<property name="prefix" value="/META-INF/resources/views/"/> -->
+		<!--<property name="suffix" value=".jsp"/> -->
+<!-- 		<property name="prefix" value="/page/" /> -->
+<!-- 		<property name="suffix" value="" /> -->
+<!-- 	</bean> -->
+
+	<!-- 支持上传文件 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver" />
+</beans>

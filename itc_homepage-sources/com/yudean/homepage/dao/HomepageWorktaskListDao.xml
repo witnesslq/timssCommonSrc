@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+    <!DOCTYPE mapper 
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yudean.homepage.dao.HomepageWorktaskListDao">
+	<!-- 可以重复使用的sql语句可以用 sql这种方式包含起来，在后面调用即可 -->
+	<sql id="column">
+		hm.id,
+		hm.flowno,
+		hm.name,
+		hm.typename,
+		hm.statusname,
+		hm.statusdate,
+		hm.createuser,
+		hm.createusername,
+		hm.createdate,
+		hm.modifyuser,
+		hm.modifyusername,
+		hm.modifydate,
+		hm.siteid,
+		hm.deptid,
+		hm.deptname,
+		hm.classtype,
+		hm.url,
+		hm.urltype,
+		hm.groupid,
+		hm.extcode,
+		hl.usercode,
+		hl.username,
+		hl.createuser usercreateuser,
+		hl.createdate
+		usercreatedate,
+		hl.modifyuser usermodifyuser,
+		hl.modifydate
+		usermodifydate,
+		hl.flag userflag,
+	</sql>
+	<sql id="column2">
+		hm.id,
+		hm.flowno,
+		hm.name,
+		hm.typename,
+		(CASE (SELECT COUNT(1)
+		FROM HOP_MAIN_LIST hp1
+		WHERE hp1.id = hl.subid
+		AND hp1.active =
+		'ACTIVE')
+		WHEN 0 THEN
+		hm.statusname
+		ELSE
+		(SELECT hp1.statusname
+		FROM
+		HOP_MAIN_LIST hp1
+		WHERE hp1.id = hl.subid
+		AND hp1.active = 'ACTIVE')
+		END) statusname,
+		hm.statusdate,
+		hm.createuser,
+		hm.createusername,
+		hm.createdate,
+		hm.modifyuser,
+		hm.modifyusername,
+		hm.modifydate,
+		hm.siteid,
+		hm.deptid,
+		hm.deptname,
+		hm.classtype,
+		hm.url,
+		hm.urltype,
+		hm.groupid,
+		hm.extcode,
+		hl.usercode,
+		hl.username,
+		hl.createuser
+		usercreateuser,
+		hl.createdate usercreatedate,
+		hl.modifyuser
+		usermodifyuser,
+		hl.modifydate usermodifydate,
+		hl.flag userflag,
+	</sql>
+		<sql id="column3">
+		hm.id,
+		hm.flowno,
+		hm.name,
+		hm.typename,
+		hm.statusname,
+		hm.statusdate,
+		hm.createuser,
+		hm.createusername,
+		hm.createdate,
+		hm.modifyuser,
+		hm.modifyusername,
+		hm.modifydate,
+		hm.siteid,
+		hm.deptid,
+		hm.deptname,
+		hm.classtype,
+		hm.url,
+		hm.urltype,
+		hm.groupid,
+		hm.extcode,
+		hl.usercode,
+		hl.username,
+		hl.createuser usercreateuser,
+		hl.createdate
+		usercreatedate,
+		hl.modifyuser usermodifyuser,
+		hl.modifydate
+		usermodifydate,
+		hl.flag userflag
+	</sql>
+	<select id="queryDoingWorkTask" resultType="WorktaskViewObj" databaseId="oracle">
+		SELECT
+		<include refid="column2" />
+		(SELECT
+		h.username FROM HOP_USER_LIST h WHERE h.id = HM.ID AND H.SITEID =
+		HM.SITEID AND H.FLAG = 'Cur' AND ROWNUM = 1) curusername
+		FROM HOP_MAIN_LIST HM, HOP_USER_LIST HL
+		WHERE HM.ID = HL.ID
+		<if test="params.siteid != null and params.siteid != '' ">
+			AND HL.SITEID = #{params.siteid}
+		</if>
+		<if test="params.id != null and params.id != '' ">
+			AND HM.ID = #{params.id}
+		</if>
+		<if test="params.usercode != null and params.usercode != '' ">
+			AND HL.USERCODE = #{params.usercode}
+		</if>
+		<if test="params.usercode != null and params.usercode != '' ">
+			AND HM.CLASSTYPE = #{params.classtype}
+		</if>
+		<if test="params.flag != null and params.flag != '' ">
+			AND HL.FLAG = #{params.flag}
+		</if>
+	</select>
+	<select id="queryDoingWorkTask" resultType="WorktaskViewObj" databaseId="mysql">
+		SELECT
+		<include refid="column2" />
+		(SELECT
+		h.username FROM HOP_USER_LIST h WHERE h.id = HM.ID AND H.SITEID =
+		HM.SITEID AND H.FLAG = 'Cur' LIMIT 0,1) curusername
+		FROM HOP_MAIN_LIST HM, HOP_USER_LIST HL
+		WHERE HM.ID = HL.ID
+		<if test="params.siteid != null and params.siteid != '' ">
+			AND HL.SITEID = #{params.siteid}
+		</if>
+		<if test="params.id != null and params.id != '' ">
+			AND HM.ID = #{params.id}
+		</if>
+		<if test="params.usercode != null and params.usercode != '' ">
+			AND HL.USERCODE = #{params.usercode}
+		</if>
+		<if test="params.usercode != null and params.usercode != '' ">
+			AND HM.CLASSTYPE = #{params.classtype}
+		</if>
+		<if test="params.flag != null and params.flag != '' ">
+			AND HL.FLAG = #{params.flag}
+		</if>
+	</select>
+	
+	
+	<select id="queryWorkTask" resultType="WorktaskViewObj" databaseId="oracle">
+		SELECT
+		<include refid="column" />
+		<!-- 将查询已办的办理人从1人变为多人 -->
+		( 
+			 SELECT WMSYS.WM_CONCAT(h.username) 
+			 FROM HOP_USER_LIST h
+			 WHERE h.id = HM.ID AND H.SITEID =
+			 HM.SITEID AND H.FLAG = 'Cur'
+			 group by h.id
+		) curusername
+		FROM HOP_MAIN_LIST HM, HOP_USER_LIST HL
+		WHERE HM.ID = HL.ID
+		<if test="params.siteid != null and params.siteid != '' ">
+			AND HL.SITEID = #{params.siteid}
+		</if>
+		<if test="params.id != null and params.id != '' ">
+			AND HM.ID = #{params.id}
+		</if>
+		<if test="params.usercode != null and params.usercode != '' ">
+			AND HL.USERCODE = #{params.usercode}
+		</if>
+		<if test="params.usercode != null and params.usercode != '' ">
+			AND HM.CLASSTYPE = #{params.classtype}
+		</if>
+		<if test="params.flag != null and params.flag != '' ">
+			AND HL.FLAG = #{params.flag}
+		</if>
+	</select>
+	
+	<select id="queryCompleteWorkTask" resultType="WorktaskViewObj" databaseId="oracle">
+		SELECT
+		<include refid="column3" />
+		FROM HOP_MAIN_LIST HM, HOP_USER_LIST HL
+		WHERE HM.ID = HL.ID
+		<if test="params.siteid != null and params.siteid != '' ">
+			AND HL.SITEID = #{params.siteid}
+		</if>
+		<if test="params.id != null and params.id != '' ">
+			AND HM.ID = #{params.id}
+		</if>
+		<if test="params.usercode != null and params.usercode != '' ">
+			AND HL.USERCODE = #{params.usercode}
+		</if>
+		<if test="params.usercode != null and params.usercode != '' ">
+			AND HM.CLASSTYPE = #{params.classtype}
+		</if>
+		<if test="params.flag != null and params.flag != '' ">
+			AND HL.FLAG = #{params.flag}
+		</if>
+	</select>	
+	
+	<select id="queryWorkTask" resultType="WorktaskViewObj" databaseId="mysql">
+		SELECT
+		<include refid="column" />
+		(SELECT h.username FROM HOP_USER_LIST
+		h WHERE h.id = HM.ID AND H.SITEID =
+		HM.SITEID AND H.FLAG = 'Cur' LIMIT 0,1) curusername
+		FROM HOP_MAIN_LIST HM, HOP_USER_LIST HL
+		WHERE HM.ID = HL.ID
+		<if test="params.siteid != null and params.siteid != '' ">
+			AND HL.SITEID = #{params.siteid}
+		</if>
+		<if test="params.id != null and params.id != '' ">
+			AND HM.ID = #{params.id}
+		</if>
+		<if test="params.usercode != null and params.usercode != '' ">
+			AND HL.USERCODE = #{params.usercode}
+		</if>
+		<if test="params.usercode != null and params.usercode != '' ">
+			AND HM.CLASSTYPE = #{params.classtype}
+		</if>
+		<if test="params.flag != null and params.flag != '' ">
+			AND HL.FLAG = #{params.flag}
+		</if>
+	</select>
+	<select id="queryWorkTaskFlow" resultType="WorktaskFlowViewObj" databaseId="oracle">
+		SELECT hm.flowno,
+		       (SELECT h.extcode FROM hop_main_list h WHERE h.id = hm.groupid) processid,
+		       hm.name,
+		       hm.statusdate,
+		       hm.statusname,
+		       (SELECT h.createusername FROM hop_main_list h WHERE h.id = hm.groupid) createusername,
+		       (SELECT hu.username
+		          FROM hop_user_list hu
+		         WHERE hu.id = hm.groupid
+		           AND hu.flag = 'Cur'
+		           AND ROWNUM = 1) previousUser
+		  FROM hop_main_list hm
+		 WHERE hm.id = (select MAX(h.id)
+                          from hop_main_list h
+                         WHERE h.flowno = #{flowno})
+		   AND hm.flowno =  #{flowno}
+	</select>
+	<select id="queryWorkTaskFlow" resultType="WorktaskFlowViewObj" databaseId="mysql">
+		SELECT hm.flowno,
+		       (SELECT h.extcode FROM hop_main_list h WHERE h.id = hm.groupid) processid,
+		       hm.name,
+		       hm.statusdate,
+		       hm.statusname,
+		       (SELECT h.createusername FROM hop_main_list h WHERE h.id = hm.groupid) createusername,
+		       (SELECT hu.username
+		          FROM hop_user_list hu
+		         WHERE hu.id = hm.groupid
+		           AND hu.flag = 'Cur'
+		            LIMIT 0,1) previousUser
+		  FROM hop_main_list hm
+		 WHERE hm.id = (select MAX(h.id)
+                          from hop_main_list h
+                         WHERE h.flowno = #{flowno})
+		   AND hm.flowno =  #{flowno}
+	</select>
+	<select id="queryWorkTakskCount" resultType="int">
+		SELECT COUNT(1)
+		  FROM HOP_MAIN_LIST HM, HOP_USER_LIST HL
+		 WHERE HM.ID = HL.ID
+		   <if test="null != userid and '' != userid">
+		   		AND HL.USERCODE = #{userid,jdbcType=VARCHAR}
+		   </if>
+		   <if test="null != siteid and '' != siteid">
+		  		AND HL.SITEID = #{siteid,jdbcType=VARCHAR}
+		   </if>
+		   <if test="null != classtype and '' != classtype">
+		   		AND HM.CLASSTYPE =  #{classtype,jdbcType=VARCHAR}
+		   </if>
+		   <if test="null != flag and '' != flag">
+		   		AND HL.FLAG = #{flag,jdbcType=VARCHAR}
+		   </if>
+	</select>
+</mapper> 

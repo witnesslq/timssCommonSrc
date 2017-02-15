@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yudean.itc.dao.sec.SecureUserGroupMapper">
+
+	<sql id="SELECT_USERGROUP">
+		SELECT  GP.GROUP_ID AS ID, 
+				GP.NAME, 
+				GP.UPDATED_BY AS UPDATEDBY, 
+				GP.UPDATE_TIME AS UPDATETIME,
+				GP.SITE_ID AS SITEID		
+	</sql>
+	<insert id="insertGroup" parameterType="SecureUserGroup">
+		INSERT INTO SEC_GROUP(GROUP_ID, NAME, SITE_ID, UPDATED_BY, UPDATE_TIME,RESERVED)
+		VALUES(#{id},#{name},#{siteId},#{updatedBy},#{updateTime},'N')
+	</insert>	
+
+	<update id="updateGroup" parameterType="SecureUserGroup">
+		UPDATE SEC_GROUP SET NAME=#{name}, UPDATED_BY=#{updatedBy},UPDATE_TIME=#{updateTime}
+		WHERE GROUP_ID=#{id}
+	</update>
+	
+	<delete id="deleteGroup" parameterType="string">
+		DELETE FROM SEC_GROUP
+		WHERE GROUP_ID=#{value}
+	</delete>
+	
+	<select id="selectGroup" resultType="SecureUserGroup" parameterType="map">
+		<include refid="SELECT_USERGROUP"></include>
+		,GP.RESERVED as reserved
+		FROM SEC_GROUP GP
+		WHERE GROUP_ID=#{groupId}		
+	</select>
+	
+	<select id="selectGroupByName" resultType="SecureUserGroup" parameterType="map">
+		<include refid="SELECT_USERGROUP"></include>
+		FROM SEC_GROUP GP
+		WHERE NAME=#{groupName}
+	</select>
+	
+	<select id="selectBelongingGroups" resultType="SecureUserGroup" parameterType="map">
+		<include refid="SELECT_USERGROUP"></include>
+		FROM SEC_GROUP GP INNER JOIN SEC_GROUP_USER SGU ON GP.GROUP_ID=SGU.GROUP_ID
+		WHERE SGU.USER_ID=#{userId}
+		ORDER BY GP.NAME
+	</select>
+	
+	<select id="selectGroups" resultType="SecureUserGroup" parameterType="map">
+		<include refid="SELECT_USERGROUP"></include>
+			, GP.numberOfUsers
+		FROM (SELECT SG.GROUP_ID, SG.NAME, SG.UPDATED_BY, SG.UPDATE_TIME, SG.SITE_ID,SG.SORTNUM, COUNT(1) AS NUMBEROFUSERS
+            FROM SEC_GROUP SG LEFT JOIN SEC_GROUP_USER SGU ON SG.GROUP_ID=SGU.GROUP_ID
+            GROUP BY SG.GROUP_ID,SG.NAME, SG.UPDATED_BY, SG.UPDATE_TIME, SG.SITE_ID,SG.SORTNUM) GP
+        <if test="PAGE.params.searchBy != null">
+			WHERE (lower(GP.GROUP_ID) LIKE '%${PAGE.params.searchBy}%' OR lower(GP.NAME) LIKE '%${PAGE.params.searchBy}%')
+		</if>
+		ORDER BY GP.SORTNUM DESC,GP.GROUP_ID
+		
+	</select>
+	
+	<insert id="insertGroupUserMapping" parameterType="map">
+		INSERT INTO SEC_GROUP_USER(GROUP_ID, USER_ID)
+		VALUES(#{groupId}, #{userId})
+	</insert>
+	
+	<insert id="deleteGroupUserMapping" parameterType="map">
+		DELETE FROM SEC_GROUP_USER
+		WHERE GROUP_ID=#{groupId} AND USER_ID=#{userId}
+	</insert>
+	<select id="selectGroupUserMapping"	parameterType="map" resultType="integer">
+		SELECT COUNT(1) FROM SEC_GROUP_USER
+		WHERE GROUP_ID=#{groupId} AND USER_ID=#{userId}
+	</select>
+	<delete id="deleteGivenUserFromAllGroups" parameterType="map">
+		DELETE FROM SEC_GROUP_USER SGU WHERE USER_ID=#{userId}
+			AND EXISTS (SELECT 1 
+						FROM SEC_GROUP SG 
+						WHERE SG.GROUP_ID=SGU.GROUP_ID
+							AND SG.SITE_ID=#{siteId})
+	</delete>
+	
+	<delete id="deleteUsersFromGivenGroup" parameterType="string">
+		DELETE FROM SEC_GROUP_USER WHERE GROUP_ID=#{value}
+	</delete>
+	
+	<select id="selectGroupsOfGivenRole" parameterType="string" resultType="SecureUserGroup">
+		<include refid="SELECT_USERGROUP"></include>
+			, GP.numberOfUsers
+		FROM (
+			SELECT SG_.GROUP_ID,SG_.NAME, SG_.UPDATED_BY, SG_.UPDATE_TIME, SG_.SITE_ID, COUNT(1) AS NUMBEROFUSERS
+			FROM (
+				SELECT SG.GROUP_ID, SG.NAME, SG.UPDATED_BY, SG.UPDATE_TIME, SG.SITE_ID
+	            FROM SEC_GROUP SG INNER JOIN SEC_GROUP_ROLE SGR ON SG.GROUP_ID=SGR.GROUP_ID
+	            WHERE SGR.ROLE_ID=#{roleId}
+	            ) SG_ LEFT JOIN SEC_GROUP_USER SGU ON SG_.GROUP_ID = SGU.GROUP_ID
+            GROUP BY SG_.GROUP_ID,SG_.NAME, SG_.UPDATED_BY, SG_.UPDATE_TIME, SG_.SITE_ID) GP
+		ORDER BY GP.NAME
+	</select>
+	
+	<select id="selectUserWithSpecificGroup" parameterType="map" resultType="SecureUser">
+        select distinct su.user_id as id, su.name as name
+        from sec_user su
+        inner join sec_organization_user sou on sou.user_id = su.user_id
+        left join sec_group_user sgu on sgu.user_id = su.user_id
+        left join sec_user_role sur on sur.user_id = su.user_id
+        left join sec_group_role sgr on sur.role_id = sgr.role_id
+        where (sgu.group_id = #{groupId} or sgr.group_id = #{groupId})
+        and (su.del_ind is null or su.del_ind = 'N')              
+        <if test="orgs != null">
+        	and sou.org_code in
+        	<foreach collection="orgs" item="item" open="(" separator="," close=")">
+        		#{item}
+        	</foreach>
+        </if>
+        <if test="onlyActive == true">
+        	and su.active='Y' 
+        </if>
+	</select>
+</mapper>

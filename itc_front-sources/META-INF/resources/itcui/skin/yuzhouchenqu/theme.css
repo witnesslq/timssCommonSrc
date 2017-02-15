@@ -1,0 +1,74 @@
+.skin-top{background-image:url(img/813a4663aaf44cf3ea31a4904e69ed87d834d26a.jpg)}.skin-top-left{background-image:url(img/21307523e44715424dfc43fc2ad3527d604d5d07.jpg)}.skin-top-right{background-image:url(img/abb7d66f0f41570e3a228c57a6464e2b29f73c5c.jpg)}.skin-left{background-image:url(img/7e0e9ff81154dbb35c891caf0b77a07943163327.gif)}.skin-left-bottom{background-image:url(img/ac3337b959c3dc58bb555e5043e31f81edc2e62f.jpg)}.sJ0,.tA0{background-repeat:repeat-x}.qq0{opacity:.03;filter:alpha(opacity=3)}
+
+.navitem,
+.navitem-hover,
+.navitem-active,
+.navitem-selected,
+.navitem-options-menu-button,
+.itc_navtree_grouptitle:hover, .itc_navtree_nochildren:hover,.itc_navtree_item:hover,
+.itc_navtree_item_selected,
+.navtree-arrow,
+.navitem-close-button,
+.navitem-selected-close-button,
+.navitem-close-button-hover,
+.kA0,.mE0
+{	
+	background: url(img/97d5f86661e7a20074119aa95cde74c24ea3d018.png) repeat-x 0 0;
+}
+
+#mainframe_navtree{
+    border-color:#cde1d2;
+    border-right-style: solid;
+    border-right-width: 1px;
+	background-color: transparent!important;
+}
+
+.navitem,
+.navitem-hover,
+.navitem-active,
+.navitem-selected,
+.navitem-options-menu-button {
+    background: -moz-linear-gradient(center top, #FEFFFF, #DAE8F6) repeat;
+    border-color:#afcdb4;
+    color: #307032;
+}
+
+.navitem-hover {
+    background: -moz-linear-gradient(center top, #FEFFFF, #C8DCF1) repeat;
+    border-color: #A1ACB8;
+}
+
+.navitem-active {
+    
+    background: #A0B0C1;
+    border-color: #808D9B;
+    color: #6A6A6A;
+}
+
+.navitem-selected {
+    border-color:#146e1f;
+    color: #FFF;
+}
+
+.itc_navtree_grouptitle:hover, .itc_navtree_nochildren:hover,.itc_navtree_item:hover {
+	background-color: transparent;
+}
+
+.itc_navtree_item_selected{
+	background-color: transparent;
+}
+
+.title_username,
+.head_link>li>a{
+	color:#276f2f;
+}
+
+.itcui-navigation-separator {
+    background-color:rgb(20,110,31);
+}
+
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+  background-color: #e6f3e7;
+  color:#555555;
+}

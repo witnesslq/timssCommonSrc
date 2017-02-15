@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+    <!DOCTYPE mapper 
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.timss.asset.dao.CmdbParamsDao">
+
+	<!-- <sql id="cmdbUserBeanFields">
+		id, ciType, paramType, paramVal, orderType, isDelete, deptId, siteId, createUser, 
+		createUserName, createDate, modifyUserName, modifyUser, modifyDate
+	</sql> -->
+
+    <select id="queryCmdbParamsBySiteId" resultType="CmdbParamsBean">
+		SELECT id, ciType, paramType, paramVal, orderType, isDelete, deptId, siteId, createUser,
+		createUserName, createDate, modifyUserName, modifyUser, modifyDate
+		FROM CMDB_PARAMS P 
+		WHERE P.siteId=#{params.siteId, jdbcType=VARCHAR} 
+		AND P.isDelete = #{ params.isDelete, jdbcType=VARCHAR }
+    </select>
+    
+    <select id="queryCmdbParamsById" parameterType="String" resultType="CmdbParamsBean">
+		SELECT id, ciType, paramType, paramVal, orderType, isDelete, deptId, siteId, createUser,
+		createUserName, createDate, modifyUserName, modifyUser, modifyDate
+		FROM CMDB_PARAMS P 
+		WHERE P.id = #{ id, jdbcType = VARCHAR }
+    </select>
+    
+    <insert id="insertCmdbParamsBean" parameterType="CmdbParamsBean">
+    	INSERT INTO CMDB_PARAMS(
+    	ID, ciType, paramType, paramVal, 
+    	orderType, isDelete, deptId, siteId, 
+    	createUser, createUserName, createDate )
+		VALUES( #{ id, jdbcType = VARCHAR }, #{ ciType, jdbcType = VARCHAR }, #{ paramType, jdbcType = VARCHAR },
+		 #{ paramVal, jdbcType = VARCHAR }, #{ orderType, jdbcType = VARCHAR }, #{ isDelete, jdbcType = VARCHAR }, 
+		 #{ deptid, jdbcType = VARCHAR }, #{ siteid, jdbcType = VARCHAR }, #{ createuser, jdbcType = VARCHAR }, 
+		 #{ createUserName, jdbcType = VARCHAR }, #{ createdate, jdbcType = TIMESTAMP } )
+    </insert>
+    
+    <update id="updateCmdbParamsBean" parameterType="CmdbParamsBean">
+    	UPDATE CMDB_PARAMS SET ciType=#{ ciType, jdbcType = VARCHAR },paramType=#{ paramType, jdbcType = VARCHAR },
+		paramVal=#{ paramVal, jdbcType = VARCHAR },
+		orderType=#{ orderType, jdbcType = INTEGER },modifyUserName=#{ modifyUserName, jdbcType = VARCHAR },
+		modifyuser=#{ modifyuser, jdbcType = VARCHAR },modifydate=#{ modifydate, jdbcType = TIMESTAMP }
+		WHERE ID= #{ id, jdbcType = VARCHAR }
+    </update>
+    
+    <update id="deleteCmdbParamsById" parameterType="CmdbParamsBean">
+    	UPDATE CMDB_PARAMS SET isDelete=#{ isDelete, jdbcType = VARCHAR },modifyUserName=#{ modifyUserName, jdbcType = VARCHAR },
+		modifyuser=#{ modifyuser, jdbcType = VARCHAR },modifydate=#{ modifydate, jdbcType = TIMESTAMP }
+		WHERE ID= #{ id, jdbcType = VARCHAR }
+    </update>
+    
+     <select id="queryOderTypeByType" parameterType="Map" resultType="CmdbParamsBean">
+		SELECT id, ciType, paramType, paramVal, orderType, isDelete, deptId, siteId, createUser,
+		createUserName, createDate, modifyUserName, modifyUser, modifyDate
+		FROM CMDB_PARAMS P 
+		WHERE P.ciType=#{ciType, jdbcType=VARCHAR} 
+		AND P.paramType = #{ paramType, jdbcType=VARCHAR }
+		<if test="sort == 'DESC'">
+			ORDER BY orderType DESC
+		</if>
+		<if test="sort == 'ASC'">
+			ORDER BY orderType ASC
+		</if>
+    </select>
+    
+</mapper>

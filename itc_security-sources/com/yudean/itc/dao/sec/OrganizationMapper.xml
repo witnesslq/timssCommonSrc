@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yudean.itc.dao.sec.OrganizationMapper">
+	<sql id="SELECT_ORG">
+	select SO.ORG_CODE as code,SO.NAME,SO.SHORT_NAME as shortName,SO.RANK,SO.SORT_NUM as sortNum,SO.PARENT_CODE as parentCode,SO.SYNC_IND as syncInd 
+	</sql>
+	
+	<select id="selectOrgByID" parameterType="String" resultType="Organization">
+		<include refid="SELECT_ORG"/>
+		from SEC_ORGANIZATION so
+		where ORG_CODE=#{value}
+	</select>
+	
+	<!-- 需要siteId，所以SQL有点复杂 -->
+	<select id="selectOrgByParentID" parameterType="map" resultType="Organization">
+		select SO_.ORG_CODE as code,
+			SO_.NAME,
+			SO_.SHORT_NAME as shortName,
+			SO_.CAL_RANK AS RANK,
+			SO_.SORT_NUM as sortNum,
+			SO_.PARENT_CODE as parentCode,
+			SO_.SITE_ID AS SITEID,
+			SO_.DEL_IND AS DEL_IND,
+			NUMBEROFCHILDREN
+		FROM (
+			SELECT SO.*, 2 AS CAL_RANK, SSO.SITE_ID
+			FROM SEC_SITE_ORGANIZATION SSO INNER JOIN SEC_ORGANIZATION SO ON SO.ORG_CODE =SSO.ORG_CODE
+			UNION ALL
+			SELECT SO.*, 3 AS CAL_RANK, SSO.SITE_ID
+			FROM SEC_SITE_ORGANIZATION SSO INNER JOIN SEC_ORGANIZATION SO ON SO.PARENT_CODE =SSO.ORG_CODE
+			UNION ALL
+			SELECT SUB_ORG.*, 4 AS CAL_RANK, SSO.SITE_ID
+			FROM SEC_SITE_ORGANIZATION SSO  INNER JOIN SEC_ORGANIZATION SO ON SO.PARENT_CODE =SSO.ORG_CODE
+			INNER JOIN SEC_ORGANIZATION SUB_ORG ON SUB_ORG.PARENT_CODE=SO.ORG_CODE
+			UNION ALL
+			SELECT GRAND_SUB_ORG.*, 5 AS CAL_RANK, SSO.SITE_ID
+			FROM SEC_SITE_ORGANIZATION SSO  INNER JOIN SEC_ORGANIZATION SO ON SO.PARENT_CODE =SSO.ORG_CODE
+			INNER JOIN SEC_ORGANIZATION SUB_ORG ON SUB_ORG.PARENT_CODE=SO.ORG_CODE
+			INNER JOIN SEC_ORGANIZATION GRAND_SUB_ORG ON GRAND_SUB_ORG.PARENT_CODE=SUB_ORG.ORG_CODE
+			UNION ALL
+			SELECT GRAND_PLUS_SUB_ORG.*, 6 AS CAL_RANK, SSO.SITE_ID
+			FROM SEC_SITE_ORGANIZATION SSO  INNER JOIN SEC_ORGANIZATION SO ON SO.PARENT_CODE =SSO.ORG_CODE
+			INNER JOIN SEC_ORGANIZATION SUB_ORG ON SUB_ORG.PARENT_CODE=SO.ORG_CODE
+			INNER JOIN SEC_ORGANIZATION GRAND_SUB_ORG ON GRAND_SUB_ORG.PARENT_CODE=SUB_ORG.ORG_CODE
+			INNER JOIN SEC_ORGANIZATION GRAND_PLUS_SUB_ORG ON GRAND_PLUS_SUB_ORG.PARENT_CODE=GRAND_SUB_ORG.ORG_CODE
+		) SO_ LEFT JOIN 
+			(SELECT CHILD.PARENT_CODE, COUNT(1) AS NUMBEROFCHILDREN
+				FROM SEC_ORGANIZATION CHILD
+				GROUP BY CHILD.PARENT_CODE				
+			)	CHILD_ ON SO_.ORG_CODE = CHILD_.PARENT_CODE
+		WHERE 1=1 AND (DEL_IND!='Y' OR DEL_IND is NULL) 
+		<choose>
+       		<when test='parentOrgCode == null or parentOrgCode eq "1"'>
+       			and (SO_.PARENT_CODE='0' OR SO_.PARENT_CODE='1' OR SO_.PARENT_CODE IS NULL OR SO_.TYPE='3')
+       		</when>
+       		<otherwise>
+       			and SO_.PARENT_CODE = #{parentOrgCode}
+       		</otherwise>
+		</choose>    
+		ORDER BY SO_.SORT_NUM asc,SO_.name
+	</select>
+	
+	<select id="selectAllOrgs" resultType="Organization">
+		<include refid="SELECT_ORG"/>,
+		sso.site_id as siteId
+		from SEC_ORGANIZATION so
+		left join sec_site_organization sso on so.org_code = sso.org_code
+	</select>
+	
+	<select id="selectOrgUserMap"  resultType="integer" parameterType="map">
+		SELECT COUNT(1) FROM SEC_ORGANIZATION_USER S WHERE S.ORG_CODE = #{orgCode} and S.USER_ID = #{userID}
+	</select>
+	
+	<delete id="deleteOrgUserMap" parameterType="map">
+		DELETE FROM SEC_ORGANIZATION_USER WHERE ORG_CODE = #{orgCode} AND USER_ID = #{userID}
+	</delete>
+	
+	<insert id="insertOrgUserMap" parameterType="map" >
+		INSERT INTO SEC_ORGANIZATION_USER(ORG_CODE,USER_ID) VALUES(#{orgCode},#{userID})
+	</insert>
+	
+	<insert id="insertOrgUserMapEx" parameterType="map" >
+		<!-- INSERT INTO SEC_ORGANIZATION_USER(ORG_CODE,USER_ID,SYNC_IND) VALUES(#{orgCode},#{userID},#{syncID}) -->
+		INSERT INTO SEC_ORGANIZATION_USER(ORG_CODE,USER_ID) VALUES(#{orgCode},#{userID})
+	</insert>
+	
+	<!-- <update id="updateOrgUserMapEx">
+		UPDATE SEC_ORGANIZATION_USER S SET S.SYNC_IND = #{syncID} 
+		WHERE 1=1
+		<if test="orgCode != null">
+			AND S.ORG_CODE = #{orgCode}
+		</if>
+			AND S.USER_ID = #{userID}
+	</update> -->
+	
+	<select id="selectOrgUserBelongsTo" parameterType="string" resultType="Organization">
+		<include refid="SELECT_ORG"></include>
+		FROM SEC_ORGANIZATION SO INNER JOIN SEC_ORGANIZATION_USER SOU ON SO.ORG_CODE = SOU.ORG_CODE
+		WHERE SOU.USER_ID=#{userId}
+		ORDER BY SO.ORG_CODE
+	</select>
+	
+	<delete id="deleteAllOrgMapping" parameterType="string">
+		DELETE FROM SEC_ORGANIZATION_USER WHERE USER_ID=#{value}
+	</delete>
+	
+	<delete id="deleteOrgMappingInGivenSite" parameterType="map">
+		DELETE FROM SEC_ORGANIZATION_USER SOU WHERE SOU.USER_ID=#{userId}
+			AND EXISTS (
+								SELECT 1
+								FROM SEC_ORGANIZATION  ORG
+									INNER JOIN  SEC_SITE_ORGANIZATION SSO ON (
+										ORG.ORG_CODE = SSO.ORG_CODE
+										OR ORG.PARENT_CODE = SSO.ORG_CODE
+										OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION PAR_ORG WHERE PAR_ORG.ORG_CODE = ORG.PARENT_CODE AND PAR_ORG.PARENT_CODE=SSO.ORG_CODE)
+										OR EXISTS (SELECT 1 FROM SEC_ORGANIZATION GRAND_FA WHERE GRAND_FA.PARENT_CODE=SSO.ORG_CODE AND GRAND_FA.ORG_CODE IN 
+								    		(SELECT PARENT_CODE FROM SEC_ORGANIZATION FA WHERE FA.ORG_CODE=ORG.PARENT_CODE))
+								)
+								WHERE SSO.SITE_ID=	#{siteId}
+									AND ORG.ORG_CODE=SOU.ORG_CODE							
+			)
+	</delete>	
+	
+	<update id="updateOrg" parameterType="Organization">
+		update sec_organization set 
+		<if test="null != parentCode and '' != parentCode">
+			PARENT_CODE = #{parentCode, jdbcType=VARCHAR},
+		</if>
+		<if test="null != syncInd and '' != syncInd">
+			SYNC_IND = #{syncInd, jdbcType=VARCHAR},
+		</if>
+		name=#{name},short_name=#{shortName},SORT_NUM=#{sortNum, jdbcType=INTEGER},
+		UPDATE_TIME = #{updateTime},UPDATED_BY = #{updatedBy, jdbcType=VARCHAR}
+		where org_code=#{code}
+	</update>
+	
+	<insert id="insertOrg" parameterType="Organization">
+		INSERT INTO SEC_ORGANIZATION (ORG_CODE,NAME,SHORT_NAME,RANK,SORT_NUM,PARENT_CODE,TYPE,UPDATED_BY,UPDATE_TIME,DEL_IND,SYNC_IND) VALUES
+		(#{code},#{name},#{shortName},#{rank, jdbcType=INTEGER},#{sortNum},#{parentCode},#{type},#{updatedBy, jdbcType=VARCHAR},#{updateTime, jdbcType=TIMESTAMP},'N',#{syncInd, jdbcType=VARCHAR})
+	</insert>
+	
+	<update id="deleteOrg" parameterType="string">
+		update sec_organization set del_ind='Y' where org_code=#{value}
+	</update>
+	
+	<delete id="deleteOrgEx" parameterType="string">
+		DELETE FROM SEC_ORGANIZATION S WHERE S.ORG_CODE = #{orgCode}
+	</delete>
+	
+	<select id="selectOrgsRelatedToRole" parameterType="string" resultType="map">
+		select sur.user_id as USERID,so.org_code as ORGCODE,so.parent_code as PCODE
+		from sec_user_role sur 
+		left join sec_organization_user sou on sou.user_id = sur.user_id
+		left join sec_organization so on so.org_code = sou.org_code
+		left join sec_user su on sou.user_id = su.user_id
+		where sur.role_id= #{value} and (su.del_ind is null or su.del_ind='N')
+		union
+		select sug.user_id as USERID ,so.org_code as ORGCODE,so.parent_code as PCODE
+		from sec_group_user sug
+		left join sec_group_role sgr on sug.group_id=sgr.group_id
+		left join sec_organization_user sou on sou.user_id = sug.user_id
+		left join sec_organization so on so.org_code = sou.org_code
+		left join sec_user su on sou.user_id = su.user_id
+		where sgr.role_id= #{value} and (su.del_ind is null or su.del_ind='N')
+	</select>
+	
+	<select id="selectOrgsRelatedToGroup" parameterType="string" resultType="map">
+		select sur.user_id as USERID,so.org_code as ORGCODE,so.parent_code as PCODE
+		from sec_group_user sur 
+		left join sec_organization_user sou on sou.user_id = sur.user_id
+		left join sec_organization so on so.org_code = sou.org_code
+		left join sec_user su on sou.user_id = su.user_id
+		where sur.group_id= #{value} and (su.del_ind is null or su.del_ind='N')
+	</select>
+	
+	<select id="selectOrgsRelatedToUsers" parameterType="string" resultType="map">
+		select su.user_id as USERID,so.org_code as ORGCODE,so.parent_code as PCODE
+		from sec_user su 
+		left join sec_organization_user sou on sou.user_id=su.user_id
+		left join sec_organization so on so.org_code = sou.org_code
+		where (su.del_ind is null or su.del_ind='N')
+		and su.user_id in
+		<foreach collection="array" item="item" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+	</select>
+	
+	<select id="selectOrgsByParentIds" parameterType="string" resultType="Organization">
+		select so.org_code as code,
+			   so.parent_code as parentCode,
+			   so.name as name,
+			   so.SYNC_IND as syncInd
+	    from sec_organization so
+		where so.parent_code in 
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")"> 
+	        #{item}
+	    </foreach> 
+	</select>
+	
+	<select id="selectOrgsParents" parameterType="string" resultType="map">
+		select so.org_code as ORGCODE,
+			   so.parent_code as PCODE,
+			   so.name as ORGNAME
+	    from sec_organization so
+		where so.org_code in 
+		<foreach collection="list" index="index" item="item" open="(" separator="," close=")"> 
+	        #{item}  
+	    </foreach> 
+	</select>
+	
+	<select id="selectAllOrgSiteMapping" resultType="map">
+		select ORG_CODE as ORGCODE,SITE_ID as SITEID from sec_site_organization
+	</select>
+	
+	<select id="selectOrgBySiteId" parameterType="string" resultType="Organization">
+		select so.org_code as code,
+		so.parent_code as parentCode,
+		so.name as name
+		from sec_organization so right join sec_site_organization sso on so.org_code = sso.org_code
+		<if test="siteId != null">
+			where sso.site_id = #{siteId}
+		</if>
+	</select>
+</mapper>

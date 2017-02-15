@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+    <!DOCTYPE mapper 
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yudean.homepage.dao.HomepageWorktaskDao">
+	<!-- 可以重复使用的sql语句可以用 sql这种方式包含起来，在后面调用即可 -->
+	<sql id="column">
+		id,
+		flowno,
+		name,
+		typename,
+		statusname,
+		statusdate,
+		createuser,
+		createusername,
+		createdate,
+		modifyuser,
+		modifyusername,
+		modifydate,
+		siteid,
+		deptid,
+		deptname,
+		classtype,
+		url,
+		urltype,
+		extCode,
+		parentExtCode,
+		active,
+		groupid,
+		tasktype
+  	</sql>
+	<!-- 如果要往表中插入空数据，则需要设置jdbcType  -->
+	<sql id="property">
+		(#{id},
+		#{flowno,jdbcType=VARCHAR},
+		#{name,jdbcType=VARCHAR},
+		#{typename,jdbcType=VARCHAR},
+		#{statusname,jdbcType=VARCHAR},
+		#{statusdate,jdbcType=TIMESTAMP},
+		#{createuser,jdbcType=VARCHAR},
+		#{createusername,jdbcType=VARCHAR},
+		#{createdate,jdbcType=TIMESTAMP},
+		#{modifyuser,jdbcType=VARCHAR},
+		#{modifyusername,jdbcType=VARCHAR},
+		#{modifydate,jdbcType=TIMESTAMP},
+		#{siteid,jdbcType=VARCHAR},
+		#{deptid,jdbcType=VARCHAR},
+		#{deptname,jdbcType=VARCHAR},
+		#{classtype,jdbcType=VARCHAR},
+		#{url,jdbcType=VARCHAR},
+		#{urltype,jdbcType=VARCHAR},
+		#{extCode,jdbcType=VARCHAR},
+		#{parentExtCode,jdbcType=VARCHAR},
+		#{active,jdbcType=VARCHAR},
+		#{groupid},
+		#{taskType,jdbcType=VARCHAR})
+	</sql>	
+	<insert id="insertWorktask">
+		insert into HOP_MAIN_LIST (<include refid="column"/>)
+		values <include refid="property"/>
+	</insert>
+	
+	<select id="queryMainSeq"  resultType="Integer">
+		select SEQ_HOP_MAINLIST.nextval from dual
+	</select>
+	
+	<select id="queryWorktask"  resultType="WorktaskBean">
+		SELECT <include refid="column"/>
+		FROM HOP_MAIN_LIST H
+		<where>
+			<if test="id != null and id != ''">
+		  		AND h.id = #{id} 
+			</if>
+			<if test="flowno != null and flowno != ''">
+		  		AND h.flowno = #{flowno} 
+			</if>
+			<if test="extCode != null and extCode != ''">
+		  		AND h.extCode = #{extCode} 
+			</if>
+			<if test="parentExtCode != null and parentExtCode != ''">
+		  		AND h.parentExtCode = #{parentExtCode} 
+			</if>
+			<if test="siteid != null and siteid != ''">
+		  		AND h.siteid = #{siteid} 
+			</if>
+			<if test="deptid != null and deptid != ''">
+		  		AND h.deptid = #{deptid} 
+			</if>
+			<if test="active != null and active != ''">
+		  		AND h.active = #{active} 
+			</if>
+			<if test="groupid != null and groupid != ''">
+		  		AND h.groupid = #{groupid} 
+			</if>
+			<if test="taskType != null and taskType != ''">
+		  		AND h.tasktype = #{taskType} 
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryWorktaskByUser"  resultType="WorktaskBean">
+		SELECT <include refid="column"/>
+		FROM HOP_MAIN_LIST H
+		<where>
+			<if test="task.id != null and task.id != ''">
+		  		AND h.id = #{task.id} 
+			</if>
+			<if test="task.flowno != null and task.flowno != ''">
+		  		AND h.flowno = #{task.flowno} 
+			</if>
+			<if test="task.extCode != null and task.extCode != ''">
+		  		AND h.extCode = #{task.extCode} 
+			</if>
+			<if test="task.parentExtCode != null and task.parentExtCode != ''">
+		  		AND h.parentExtCode = #{task.parentExtCode} 
+			</if>
+			<if test="task.siteid != null and task.siteid != ''">
+		  		AND h.siteid = #{task.siteid} 
+			</if>
+			<if test="task.deptid != null and task.deptid != ''">
+		  		AND h.deptid = #{task.deptid} 
+			</if>
+			<if test="task.active != null and task.active != ''">
+		  		AND h.active = #{task.active} 
+			</if>
+			<if test="task.groupid != null and task.groupid != ''">
+		  		AND h.groupid = #{task.groupid} 
+			</if>
+			<if test="task.taskType != null and task.taskType != ''">
+		  		AND h.tasktype = #{task.taskType} 
+			</if>
+			<if test="user != null and user.id != null">
+				EXISTS (SELECT 1
+		          FROM HOP_USER_LIST HU
+		         WHERE HU.ID = H.ID
+		           <if test=" user.siteid != null and user.siteid != ''">
+		           		AND HU.SITEID = #{user.siteid}
+		           </if>
+		           <if test=" user.flag != null and user.flag != ''">
+		           		AND HU.FLAG = #{user.flag}
+		           </if>
+		           <if test=" user.usercode != null and user.usercode != ''">
+		           		AND HU.FLAG = #{user.usercode}
+		           </if>
+		           )
+			</if>
+		</where>
+	</select>
+	
+	
+	<update id="updateWorktask" parameterType="WorktaskBean">
+		UPDATE HOP_MAIN_LIST H
+		<set>
+			<if test="flowno != null"> H.flowno=#{flowno,jdbcType=VARCHAR}, </if>
+			<if test="name != null"> H.name=#{name,jdbcType=VARCHAR}, </if>
+			<if test="typename != null"> H.typename=#{typename,jdbcType=VARCHAR}, </if>
+			<if test="statusname != null"> H.statusname=#{statusname,jdbcType=VARCHAR}, </if>
+			<if test="statusdate != null"> H.statusdate=#{statusdate,jdbcType=TIMESTAMP}, </if>
+			<if test="createuser != null"> H.createuser=#{createuser,jdbcType=VARCHAR}, </if>
+			<if test="createusername != null"> H.createusername=#{createusername,jdbcType=VARCHAR}, </if>
+			<if test="createdate != null"> H.createdate=#{createdate,jdbcType=TIMESTAMP}, </if>
+			<if test="modifyuser != null"> H.modifyuser=#{modifyuser,jdbcType=VARCHAR}, </if>
+			<if test="modifyusername != null"> H.modifyusername=#{modifyusername,jdbcType=VARCHAR}, </if>
+			<if test="modifydate != null"> H.modifydate=#{modifydate,jdbcType=TIMESTAMP}, </if>
+			<if test="deptid != null"> H.deptid=#{deptid,jdbcType=VARCHAR}, </if>
+			<if test="deptname != null"> H.deptname=#{deptname,jdbcType=VARCHAR}, </if>
+			<if test="classtype != null"> H.classtype=#{classtype,jdbcType=VARCHAR}, </if>
+			<if test="url != null"> H.url=#{url,jdbcType=VARCHAR}, </if>
+			<if test="urltype != null"> H.urltype=#{urltype,jdbcType=VARCHAR}, </if>
+			<if test="extCode != null"> H.extCode=#{extCode,jdbcType=VARCHAR}, </if>
+			<if test="parentExtCode != null"> H.parentExtCode=#{parentExtCode,jdbcType=VARCHAR}, </if>
+			<if test="active != null"> H.active=#{active,jdbcType=VARCHAR},</if>
+			<if test="taskType != null"> H.tasktype=#{taskType,jdbcType=VARCHAR}</if>
+		</set>
+		<where>
+			<if test="id != null and id != ''">
+		  		and h.id = #{id} 
+			</if>
+			<if test="groupid != null and groupid != ''">
+		  		and h.groupid = #{groupid} 
+			</if>
+			<if test="siteid != null and siteid != ''">
+		  		and h.siteid = #{siteid} 
+			</if>
+			<if test="flowno != null and siteid != ''">
+		  		and h.flowno = #{flowno} 
+			</if>
+		</where>
+	</update>
+</mapper> 

@@ -1,0 +1,91 @@
+.tree_wrap{
+	width:400px;
+	height:300px;
+	border-width:1px;
+	border-style:solid;
+	border-color:rgb(198, 198, 198);
+	overflow:auto;
+	margin-left:12px;
+	margin-top:5px;
+}
+.nodata{width: 100%;text-align: center;margin-top: 6px;height: 20px;display: block;font-weight: bold;}
+.tags_readonly {
+	padding-top: 12px;
+	padding-left: 18px;
+	padding-bottom: 6px;
+	width: 100%;
+}
+.label-primary {
+	background-color: #428bca;
+}
+.label {
+	display: block;
+	float:left;
+	margin-bottom:6px;
+	padding: .5em .6em .5em;
+	font-size: 12px;
+	font-weight: bold;
+	line-height: 1;
+	color: #fff;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: baseline;
+	border-radius: .25em;
+	margin-right:6px;
+}
+.label-inherit {
+	background-color: #DDDDDD;
+	color:#000000;
+}
+.tags_readonly{
+	padding-top:12px;
+	padding-left:18px;
+	padding-bottom:6px;
+	width:100%;
+}
+.label_del{
+	margin-left:6px;
+	cursor:pointer;
+}
+.label-success {
+	background-color: #5cb85c;
+}
+.label-default {
+	background-color: #999;
+}
+
+.ico_org_open{
+	width:16px;
+	height:16px;
+	background:url("../images/icon/organization_close.png");
+	display: inline-block;
+}
+
+#userTree .tree-folder-open,
+#org_tree .tree-folder-open{
+	width:16px;
+	height:16px;
+	background:url("../images/icon/organization_open.png");
+	display: inline-block;
+}
+
+.ico_person{
+	width:16px;
+	height:16px;
+	background:url("../images/icon/user.png");
+	display: inline-block;
+}
+
+.sep_line{
+	border-bottom-color: #5aa3d6;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+#noSearchResult>span {
+	margin: 0 auto;
+	width: 200px;
+	display: block;
+	font-size: 12px;
+	margin-top: 10px;
+}

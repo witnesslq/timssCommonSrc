@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yudean.itc.dao.sec.SecureExclusiveRuleMapper">
+	<resultMap type="com.yudean.itc.dto.sec.SecureExclusiveRule" id="SecureExclusiveRuleMap">
+		<result property="ruleId" column="RULE_ID"/>
+		<result property="roles" column="ROLES"/>
+		<result property="siteId" column="SITE_ID"/>
+	</resultMap>
+	
+	<select id="querySecExclusiveRuleList" resultMap="SecureExclusiveRuleMap">
+		SELECT SER.RULE_ID,SER.ROLES,SER.SITE_ID  
+		FROM SEC_EXCLUSIVE_RULE SER
+		WHERE 1=1 
+		<if test="params.ruleId != null and params.ruleId != ''">
+		  	AND SER.RULE_ID LIKE '%'||'${params.ruleId}'||'%' 
+		</if>
+		<if test="params.roles != null and params.roles != ''">
+		  	AND SER.ROLES LIKE '%'||'${params.roles}'||'%' 
+		</if>
+		<if test="params.siteId != null and params.siteId != ''">
+		  	AND SER.SITE_ID LIKE '%'||'${params.siteId}'||'%' 
+		</if>
+	</select>
+		
+	<insert id="insertSecExclusiveRule" parameterType="com.yudean.itc.dto.sec.SecureExclusiveRule">
+		INSERT INTO SEC_EXCLUSIVE_RULE
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+	      <if test="ruleId != null"> RULE_ID, </if>
+	      <if test="roles != null"> ROLES, </if>
+	      <if test="siteId != null"> SITE_ID, </if>
+	    </trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+	      <if test="ruleId != null"> #{ruleId,jdbcType=VARCHAR}, </if>
+	      <if test="roles != null"> #{roles,jdbcType=VARCHAR}, </if>
+	      <if test="siteId != null"> #{siteId,jdbcType=VARCHAR}, </if>
+	    </trim>
+	</insert>
+	
+	<update id="updateSecExclusiveRule" parameterType="com.yudean.itc.dto.sec.SecureExclusiveRule">
+		UPDATE SEC_EXCLUSIVE_RULE SER
+		<set>
+	      <if test="roles != null and roles != ''"> SER.ROLES=#{roles,jdbcType=VARCHAR}, </if>
+	      <if test="siteId != null and siteId != ''"> SER.SITE_ID=#{siteId,jdbcType=VARCHAR}, </if>
+	    </set>
+		where SER.RULE_ID=#{ruleId,jdbcType=VARCHAR}
+	</update>
+</mapper>
